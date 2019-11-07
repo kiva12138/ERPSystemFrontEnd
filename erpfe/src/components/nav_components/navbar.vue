@@ -1,104 +1,76 @@
 <template>
 <div>
-  <div class="logo_div"> Logo And Login </div>
+  <navhead class="nav_head"/>
   <el-menu class="nav_el_menu"
     background-color="#545c64"
-text-color="#fff"
-active-text-color="#ffd04b"
-    @select="handleSelect">
-    <el-submenu index="1">
+    text-color="#fff"
+    active-text-color="#ffd04b">
+    <div
+      v-for="(navitem, index) in navItems"
+      v-bind:key='index+""'
+    >
+    <el-submenu 
+      :index='index+""'
+      v-if="navitem.submenu.length!==0">
       <template slot="title">
-        <i class="el-icon-location"></i>
-        <span>导航一</span>
+        <i  class="el-icon-s-operation"></i>
+        <span>{{navitem.name}}</span>
       </template>
-      <el-menu-item-group>
-        <template slot="title">分组一</template>
-        <el-menu-item index="1-1">选项1</el-menu-item>
-        <el-menu-item index="1-2">选项2</el-menu-item>
-      </el-menu-item-group>
-      <el-menu-item-group title="分组2">
-        <el-menu-item index="1-3">选项3</el-menu-item>
-      </el-menu-item-group>
-      <el-submenu index="1-4">
-        <template slot="title">选项4</template>
-        <el-menu-item index="1-4-1">选项1</el-menu-item>
-      </el-submenu>
+      <el-menu-item
+        class="nav_el_sub_menu_item"
+        v-for="(navsubitem, indexsub) in navitem.submenu"
+        :index="index+'-'+indexsub"
+        v-bind:key='indexsub'>
+          {{navsubitem}}
+      </el-menu-item>
     </el-submenu>
-    <el-submenu index="2">
+    <el-menu-item
+        :index='index+""'
+        v-else
+      >
       <template slot="title">
-        <i class="el-icon-location"></i>
-        <span>导航二</span>
+        <i  class="el-icon-s-operation"></i>
+        <span>{{navitem.name}}</span>
       </template>
-      <el-menu-item-group>
-        <template slot="title">分组一</template>
-        <el-menu-item index="2-1">选项1</el-menu-item>
-        <el-menu-item index="2-2">选项2</el-menu-item>
-      </el-menu-item-group>
-      <el-menu-item-group title="分组2">
-        <el-menu-item index="2-3">选项3</el-menu-item>
-      </el-menu-item-group>
-      <el-submenu index="2-4">
-        <template slot="title">选项4</template>
-        <el-menu-item index="2-4-1">选项1</el-menu-item>
-      </el-submenu>
-    </el-submenu>
-    <el-submenu index="3">
-      <template slot="title">
-        <i class="el-icon-location"></i>
-        <span>导航三</span>
-      </template>
-      <el-menu-item-group>
-        <template slot="title">分组一</template>
-        <el-menu-item index="3-1">选项1</el-menu-item>
-        <el-menu-item index="3-2">选项2</el-menu-item>
-      </el-menu-item-group>
-      <el-menu-item-group title="分组2">
-        <el-menu-item index="3-3">选项3</el-menu-item>
-      </el-menu-item-group>
-      <el-submenu index="3-4">
-        <template slot="title">选项4</template>
-        <el-menu-item index="3-4-1">选项1</el-menu-item>
-      </el-submenu>
-    </el-submenu>
-    <el-submenu index="4">
-      <template slot="title">
-        <i class="el-icon-location"></i>
-        <span>导航四</span>
-      </template>
-      <el-menu-item-group>
-        <template slot="title">分组一</template>
-        <el-menu-item index="4-1">选项1</el-menu-item>
-        <el-menu-item index="4-2">选项2</el-menu-item>
-      </el-menu-item-group>
-      <el-menu-item-group title="分组2">
-        <el-menu-item index="4-3">选项3</el-menu-item>
-      </el-menu-item-group>
-      <el-submenu index="4-4">
-        <template slot="title">选项4</template>
-        <el-menu-item index="4-4-1">选项1</el-menu-item>
-      </el-submenu>
-    </el-submenu>
+      </el-menu-item>
+    </div>
+
+    
   </el-menu>
 </div>
 </template>
 
 <script>
+
+import navhead from './navhead.vue'
+import menuData from '../../config/menu.js'
+
 export default {
   name: 'NavBar',
+  data () {
+    return {
+      navItems:menuData
+    }
+  },
+  components: {
+    'navhead': navhead
+  },
   methods: {
-    handleSelect (key, keyPath) {
-      console.log(key, keyPath)
+    handleSelect () {
+      console.log('Select')
     }
   }
 }
 </script>
 
 <style>
-.logo_div {
-background-color: green;
-margin: 20px;
+.nav_head {
+margin: 5px;
 }
 .nav_el_menu {
 margin-right: -1px;
+}
+.nav_el_sub_menu_item {
+margin-left: 30px;
 }
 </style>

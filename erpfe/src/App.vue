@@ -41,7 +41,7 @@ body{
   margin-left: 15%;
   width: 84%;
   position: fixed;
-  background-color: green;
+  background-color: gray;
   display: inline-block;
   vertical-align: top;
 }
@@ -60,6 +60,5 @@ body{
 ::-webkit-scrollbar-thumb {
   border-radius:10px;
   background-color: #273746;
-
 }
 </style>
