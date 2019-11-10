@@ -4,12 +4,13 @@
   <el-menu class="nav_el_menu"
     background-color="#545c64"
     text-color="#fff"
-    active-text-color="#ffd04b">
+    active-text-color="#ffd04b"
+    @select="handleSelect">
     <div
       v-for="(navitem, index) in navItems"
-      v-bind:key='index+""'
+      v-bind:key='index + "" '
     >
-    <el-submenu 
+    <el-submenu
       :index='index+""'
       v-if="navitem.submenu.length!==0">
       <template slot="title">
@@ -35,7 +36,6 @@
       </el-menu-item>
     </div>
 
-    
   </el-menu>
 </div>
 </template>
@@ -49,15 +49,19 @@ export default {
   name: 'NavBar',
   data () {
     return {
-      navItems:menuData
+      navItems: menuData
     }
   },
   components: {
     'navhead': navhead
   },
   methods: {
-    handleSelect () {
-      console.log('Select')
+    handleSelect (key, keyPath) {
+      this.$router.push({
+        'path': this.navItems[keyPath[0]].url
+        // 'query':{
+        // 'item':this.currentActiveItem.url
+      })
     }
   }
 }

@@ -1,20 +1,14 @@
- const  navItems= [
-    {'name': '基础数据', 'submenu': ['工序', '工艺路线', '生产BOM']},
-    {'name': '生产管理', 'submenu': ['排程']},
-    {'name': '配送管理', 'submenu': []},
-    {'name': '生产操作', 'submenu': ['工序', '工艺路线', '生产BOM']},
-    {'name': '质量管理', 'submenu': ['质量配置', '质检执行']},
-    {'name': '仓储管理', 'submenu': []},
-    {'name': '异常事件管理', 'submenu': ['异常事件定义', '异常处理标签', '异常订阅']},
-    {'name': '追溯管理', 'submenu': []},
-    {'name': 'BI报表和看板', 'submenu': []},
-    {'name': '设备定义管理', 'submenu': ['制造商列表', '设备类型定义', '模具类型定义', '故障原因定义', '报告模板定义', '备件定义']},
-    {'name': '设备管理', 'submenu': ['设备档案', '设备日志']},
-    {'name': '模具管理', 'submenu': ['模具档案', '模具日志']},
-    {'name': '维修任务', 'submenu': ['创建维修任务', '维修任务审批', '维修任务执行']},
-    {'name': '保养任务', 'submenu': ['创建保养任务', '保养任务执行']},
-    {'name': '点检任务', 'submenu': ['创建点检任务', '点检任务执行', '管理点检任务']},
-    {'name': '备件更换', 'submenu': ['备件关联', '备件更换', '管理点检任务']}
-    ];
+const navItems = [
+  {'name': '基础数据', 'url': '/basicdata', 'submenu': ['工序', '工艺路线', '生产BOM']},
+  {'name': '工单管理', 'url': '/bill', 'submenu': []},
+  {'name': '任务管理', 'url': '/task', 'submenu': ['排程']},
+  {'name': '生产操作', 'url': '/produce', 'submenu': []},
+  {'name': '质量管理', 'url': '/quality', 'submenu': ['质量配置', '质检执行']},
+  {'name': '仓储与物流管理', 'url': '/warehouse', 'submenu': ['仓储管理', '物流管理']},
+  {'name': '异常管理', 'url': '/exception', 'submenu': ['异常事件定义', '异常处理标签', '异常订阅']},
+  {'name': '追溯管理', 'url': '/trace', 'submenu': []},
+  {'name': 'BI报表和看板', 'url': '/board', 'submenu': []},
+  {'name': '设备管理', 'url': '/equipment', 'submenu': ['设备档案', '设备日志', '模具管理', '维修任务', '保养任务', '点检任务', '备件更换']}
+]
 
-    export default navItems;
+export default navItems

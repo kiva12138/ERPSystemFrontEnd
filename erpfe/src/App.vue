@@ -18,6 +18,10 @@ export default {
   name: 'App',
   components: {
     'navbar': navbar
+  },
+  watch: {
+    '$route' (to, from) {
+    }
   }
 }
 
