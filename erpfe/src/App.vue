@@ -44,8 +44,9 @@ body{
 .router_view_class {
   margin-left: 15%;
   width: 84%;
+  height: 100%;
   position: fixed;
-  background-color: gray;
+  background-color: #F2F6FC;
   display: inline-block;
   vertical-align: top;
 }

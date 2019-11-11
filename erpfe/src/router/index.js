@@ -29,6 +29,10 @@ let router = new Router({
     },
     {
       path: '/',
+      redirect: '/login'
+    },
+    {
+      path: '/login',
       name: 'LoginPage',
       component: LoginPage,
       meta: {
@@ -121,10 +125,22 @@ let router = new Router({
 export default router
 
 router.beforeEach((to, from, next) => {
-  if (to.meta.title) {
-    document.title = to.meta.title
+  if (Vue.prototype.$cookies.isKey('login')) {
+    if (to.meta.title) {
+      document.title = to.meta.title
+    }
+  } else {
+    if (from.name === 'LoginPage') {
+      return
+    }
+    if (to.name !== 'LoginPage') {
+      router.push({
+        path: '/login'
+      })
+    }
   }
   next()
 })
 
-router.afterEach((to, from) => {})
+router.afterEach((to, from) => {
+})

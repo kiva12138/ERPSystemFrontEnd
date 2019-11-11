@@ -6,36 +6,31 @@
     text-color="#fff"
     active-text-color="#ffd04b"
     @select="handleSelect">
-    <div
-      v-for="(navitem, index) in navItems"
-      v-bind:key='index + "" '
-    >
-    <el-submenu
-      :index='index+""'
-      v-if="navitem.submenu.length!==0">
-      <template slot="title">
-        <i  class="el-icon-s-operation"></i>
-        <span>{{navitem.name}}</span>
-      </template>
-      <el-menu-item
-        class="nav_el_sub_menu_item"
-        v-for="(navsubitem, indexsub) in navitem.submenu"
-        :index="index+'-'+indexsub"
-        v-bind:key='indexsub'>
-          {{navsubitem}}
-      </el-menu-item>
-    </el-submenu>
-    <el-menu-item
+    <div v-for="(navitem, index) in navItems"
+      v-bind:key='index + "" '>
+      <el-submenu
         :index='index+""'
-        v-else
-      >
-      <template slot="title">
-        <i  class="el-icon-s-operation"></i>
-        <span>{{navitem.name}}</span>
-      </template>
+        v-if="navitem.submenu.length!==0">
+        <template slot="title">
+          <i  class="el-icon-s-operation"></i>
+          <span>{{navitem.name}}</span>
+        </template>
+        <el-menu-item
+          class="nav_el_sub_menu_item"
+          v-for="(navsubitem, indexsub) in navitem.submenu"
+          :index="index+'-'+indexsub"
+          v-bind:key='indexsub'>
+            {{navsubitem}}
+        </el-menu-item>
+      </el-submenu>
+      <el-menu-item :index='index+""'
+        v-else >
+        <template slot="title">
+          <i class="el-icon-s-operation"></i>
+          <span>{{navitem.name}}</span>
+        </template>
       </el-menu-item>
     </div>
-
   </el-menu>
 </div>
 </template>

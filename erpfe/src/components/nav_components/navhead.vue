@@ -37,16 +37,24 @@ export default {
   },
   methods: {
     handleHeadEventClicked: function (navheadItem) {
-      if (!this.login && navheadItem === '登录') {
+      if (!this.$cookies.isKey('login') && navheadItem === '登录') {
         console.log('Log In')
-        this.login = true
-      } else if (this.login && navheadItem === '登出') {
+        this.$cookies.set('login', 'true', {expires: '24h'})
+        this.$cookies.set('userName', 'Tom', {expires: '24h'})
+        location.reload()
+      } else if (this.$cookies.isKey('login') && navheadItem === '登出') {
         console.log('Log Out')
-        this.login = false
-      } else if (this.login) {
+        this.$cookies.remove('login')
+        this.$cookies.remove('userName')
+        location.reload()
+      } else if (this.$cookies.isKey('login')) {
         console.log(navheadItem)
       }
+      this.login = this.$cookies.isKey('login')
     }
+  },
+  mounted () {
+    this.login = this.$cookies.isKey('login')
   }
 }
 </script>
