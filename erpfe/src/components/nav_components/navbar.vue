@@ -12,7 +12,7 @@
         :index='index+""'
         v-if="navitem.submenu.length!==0">
         <template slot="title">
-          <i  class="el-icon-s-operation"></i>
+          <i class="el-icon-s-operation"></i>
           <span>{{navitem.name}}</span>
         </template>
         <el-menu-item
@@ -20,7 +20,7 @@
           v-for="(navsubitem, indexsub) in navitem.submenu"
           :index="index+'-'+indexsub"
           v-bind:key='indexsub'>
-            {{navsubitem}}
+            {{navsubitem.name}}
         </el-menu-item>
       </el-submenu>
       <el-menu-item :index='index+""'
@@ -52,11 +52,17 @@ export default {
   },
   methods: {
     handleSelect (key, keyPath) {
+      let paths = keyPath[keyPath.length - 1].split('-')
+      let path = this.navItems[paths[0]].url
+      if (this.navItems[paths[0]].submenu.length !== 0) {
+        path += ('/' + this.navItems[paths[0]].submenu[paths[1]].url)
+      }
+      console.log(path)
+      /*
       this.$router.push({
         'path': this.navItems[keyPath[0]].url
-        // 'query':{
-        // 'item':this.currentActiveItem.url
       })
+      */
     }
   }
 }
