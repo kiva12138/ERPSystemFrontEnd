@@ -1,12 +1,18 @@
 <template>
 <div>
-  基础数据管理
+  <pathbar />
+  <router-view></router-view>
 </div>
 </template>
 
 <script>
+import PathBar from '@/components/pathbarcomponents/pathbarcomp.vue'
+
 export default {
-  name: 'BasicDataPage'
+  name: 'BasicDataPage',
+  components: {
+    'pathbar': PathBar
+  }
 }
 </script>
 

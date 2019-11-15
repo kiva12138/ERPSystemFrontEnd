@@ -21,7 +21,9 @@ let app = new Vue(
   {
     el: '#app',
     router,
-    components: {'App': App},
+    components: {
+      'App': App
+    },
     template: '<App/>'
   }
 )

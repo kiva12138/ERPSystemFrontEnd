@@ -1,13 +1,12 @@
 <template>
 <div>
-  This is Path Bar
+  点检管理
 </div>
 </template>
 
 <script>
-
 export default {
-  name: 'PathBar'
+  name: 'CheckComp'
 }
 </script>
 

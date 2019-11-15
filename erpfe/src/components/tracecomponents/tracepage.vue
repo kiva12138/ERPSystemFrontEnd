@@ -1,12 +1,17 @@
 <template>
 <div>
-  追溯管理
+  <navbar/>
 </div>
 </template>
 
 <script>
+import NavBar from '@/components/pathbarcomponents/pathbarcomp.vue'
+
 export default {
-  name: 'TracePage'
+  name: 'TracePage',
+  components: {
+    'navbar': NavBar
+  }
 }
 </script>
 

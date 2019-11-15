@@ -1,12 +1,17 @@
 <template>
 <div>
-  生产管理
+  <navbar/>
 </div>
 </template>
 
 <script>
+import NavBar from '@/components/pathbarcomponents/pathbarcomp.vue'
+
 export default {
-  name: 'ProducePage'
+  name: 'ProducePage',
+  components: {
+    'navbar': NavBar
+  }
 }
 </script>
 

@@ -1,12 +1,18 @@
 <template>
 <div>
-  任务管理
+  <navbar/>
+  <router-view/>
 </div>
 </template>
 
 <script>
+import NavBar from '@/components/pathbarcomponents/pathbarcomp.vue'
+
 export default {
-  name: 'TaskPage'
+  name: 'TaskPage',
+  components: {
+    'navbar': NavBar
+  }
 }
 </script>
 

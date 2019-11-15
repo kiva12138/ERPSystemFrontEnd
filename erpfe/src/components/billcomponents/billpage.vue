@@ -1,12 +1,17 @@
 <template>
 <div>
-  工单管理
+  <navbar/>
 </div>
 </template>
 
 <script>
+import NavBar from '@/components/pathbarcomponents/pathbarcomp.vue'
+
 export default {
-  name: 'BillPage'
+  name: 'BillPage',
+  components: {
+    'navbar': NavBar
+  }
 }
 </script>
 

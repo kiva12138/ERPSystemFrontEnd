@@ -1,12 +1,18 @@
 <template>
 <div>
-  质量管理
+  <navbar/>
+  <router-view/>
 </div>
 </template>
 
 <script>
+import NavBar from '@/components/pathbarcomponents/pathbarcomp.vue'
+
 export default {
-  name: 'QualityPage'
+  name: 'QualityPage',
+  components: {
+    'navbar': NavBar
+  }
 }
 </script>
 

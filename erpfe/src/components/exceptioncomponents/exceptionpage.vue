@@ -1,12 +1,18 @@
 <template>
 <div>
-  异常管理
+  <navbar/>
+  <router-view/>
 </div>
 </template>
 
 <script>
+import NavBar from '@/components/pathbarcomponents/pathbarcomp.vue'
+
 export default {
-  name: 'ExceptionPage'
+  name: 'ExceptionPage',
+  components: {
+    'navbar': NavBar
+  }
 }
 </script>
 

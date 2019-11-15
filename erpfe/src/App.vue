@@ -5,7 +5,9 @@
       <navbar/>
     </div>
 
-    <router-view class='router_view_class'/>
+    <keep-alive>
+      <router-view class='router_view_class'/>
+    </keep-alive>
 
   </div>
 </template>

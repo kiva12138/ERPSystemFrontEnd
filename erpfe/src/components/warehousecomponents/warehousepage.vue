@@ -1,12 +1,18 @@
 <template>
 <div>
-  库存管理
+  <navbar/>
+  <router-view/>
 </div>
 </template>
 
 <script>
+import NavBar from '@/components/pathbarcomponents/pathbarcomp.vue'
+
 export default {
-  name: 'WareHousePage'
+  name: 'WareHousePage',
+  components: {
+    'navbar': NavBar
+  }
 }
 </script>
 

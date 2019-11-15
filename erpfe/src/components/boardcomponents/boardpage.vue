@@ -1,12 +1,17 @@
 <template>
 <div>
-  看板管理
+  <navbar/>
 </div>
 </template>
 
 <script>
+import NavBar from '@/components/pathbarcomponents/pathbarcomp.vue'
+
 export default {
-  name: 'BoardPage'
+  name: 'BoardPage',
+  components: {
+    'navbar': NavBar
+  }
 }
 </script>
 

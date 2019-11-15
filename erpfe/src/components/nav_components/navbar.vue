@@ -57,12 +57,11 @@ export default {
       if (this.navItems[paths[0]].submenu.length !== 0) {
         path += ('/' + this.navItems[paths[0]].submenu[paths[1]].url)
       }
-      console.log(path)
-      /*
       this.$router.push({
-        'path': this.navItems[keyPath[0]].url
+        'path': path
       })
-      */
+      this.$cookies.set('path1', paths[0], {expires: '24h'})
+      this.$cookies.set('path2', paths[1], {expires: '24h'})
     }
   }
 }
