@@ -40,7 +40,7 @@
 <script>
 
 import navhead from './navhead.vue'
-import menuData from '../../config/menu.js'
+import menuData from '../../config_new/menu.js'
 
 export default {
   name: 'NavBar',

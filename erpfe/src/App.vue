@@ -14,7 +14,7 @@
 
 <script>
 
-import navbar from './components/nav_components/navbar.vue'
+import navbar from './components_new/nav_components/navbar.vue'
 
 export default {
   name: 'App',
@@ -42,30 +42,34 @@ body{
   overflow-x: hidden;
   overflow-y: auto;
   vertical-align: top;
+  z-index: 10;
 }
 .router_view_class {
   margin-left: 15%;
   width: 84%;
   height: 100%;
   position: fixed;
+  overflow-y: auto;
+  overflow-x: auto;
   background-color: #F2F6FC;
   display: inline-block;
   vertical-align: top;
+  z-index: 1;
 }
 
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
-  background-color: #566573;
+  background-color: #F2F6FC;
 }
 
 ::-webkit-scrollbar-track {
-  border-radius:10px;
-  background-color:#566573;
+  border-radius: 10px;
+  background-color: #E4E7ED;
 }
 
 ::-webkit-scrollbar-thumb {
-  border-radius:10px;
-  background-color: #273746;
+  border-radius: 10px;
+  background-color: #C0C4CC;
 }
 </style>

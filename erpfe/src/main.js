@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import App from './App'
-import router from './router'
+import router from './router/router_new.js'
 import ElementUI from 'element-ui'
 import VueSession from 'vue-session'
 import VueCookies from 'vue-cookies'

@@ -8,6 +8,8 @@ import BasicDataPage from '@/components/basicdatacomponents/basicdatapage.vue'
 import ProcessComponent from '@/components/basicdatacomponents/processcomp.vue'
 import CraftsComponent from '@/components/basicdatacomponents/craftscomp.vue'
 import BomComponent from '@/components/basicdatacomponents/bomcomp.vue'
+import MaterialComponent from '@/components/basicdatacomponents/materialcomp.vue'
+import StationComponent from '@/components/basicdatacomponents/stationcomp.vue'
 
 import BillPage from '@/components/billcomponents/billpage.vue'
 
@@ -35,6 +37,8 @@ import QualityCarringComponent from '@/components/qualitycomponents/carringcomp.
 
 import TaskPage from '@/components/taskcomponents/taskpage.vue'
 import ScheduleComponent from '@/components/taskcomponents/schedulecomp.vue'
+import ScheduledComponent from '@/components/taskcomponents/scheduledcomp.vue'
+import ProducingComponent from '@/components/taskcomponents/producingcomp.vue'
 
 import TracePage from '@/components/tracecomponents/tracepage.vue'
 
@@ -63,7 +67,7 @@ let router = new Router({
       name: 'LoginPage',
       component: LoginPage,
       meta: {
-        title: '请先登录'
+        title: '登录'
       }
     },
     {
@@ -93,6 +97,20 @@ let router = new Router({
           component: BomComponent,
           meta: {
             title: 'Bom管理'
+          }
+        },
+        {
+          path: 'material',
+          component: MaterialComponent,
+          meta: {
+            title: '物料管理'
+          }
+        },
+        {
+          path: 'station',
+          component: StationComponent,
+          meta: {
+            title: '工位管理'
           }
         }
       ]
@@ -247,7 +265,21 @@ let router = new Router({
           path: 'schedule',
           component: ScheduleComponent,
           meta: {
-            title: '排程'
+            title: '任务排程'
+          }
+        },
+        {
+          path: 'scheduled',
+          component: ScheduledComponent,
+          meta: {
+            title: '已排程任务'
+          }
+        },
+        {
+          path: 'producing',
+          component: ProducingComponent,
+          meta: {
+            title: '已下发任务'
           }
         }
       ]

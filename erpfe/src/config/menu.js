@@ -4,6 +4,14 @@ const navItems = [
     'url': '/basicdata',
     'submenu': [
       {
+        'name': '物料',
+        'url': 'material'
+      },
+      {
+        'name': '工位',
+        'url': 'station'
+      },
+      {
         'name': '工序',
         'url': 'process'
       },
@@ -27,8 +35,16 @@ const navItems = [
     'url': '/task',
     'submenu': [
       {
-        'name': '排程',
+        'name': '排程任务',
         'url': 'schedule'
+      },
+      {
+        'name': '已排程任务',
+        'url': 'scheduled'
+      },
+      {
+        'name': '已下发任务',
+        'url': 'producing'
       }
     ]
   },
