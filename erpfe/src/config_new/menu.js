@@ -12,7 +12,7 @@ const navItemsNew = [
         'url': 'current'
       },
       {
-        'name': '物料使用统计',
+        'name': '物料统计',
         'url': 'statistics'
       },
       {

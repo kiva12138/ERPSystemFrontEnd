@@ -1,17 +1,17 @@
 <template>
 <div>
-  <navbar/>
-  <router-view/>
+  <pathbar />
+  <router-view></router-view>
 </div>
 </template>
 
 <script>
-import NavBar from '@/components_new/main_page/pathbar_components/pathbarcomp.vue'
+import PathBar from '@/components_new/main_page/pathbar_components/pathbarcomp.vue'
 
 export default {
   name: 'MaterialPage',
   components: {
-    'navbar': NavBar
+    'pathbar': PathBar
   }
 }
 </script>
