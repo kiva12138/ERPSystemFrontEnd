@@ -30,7 +30,7 @@
         v-model="bySelectingDays"
         style="display: inline-block; width: 20%;"
         inactive-text="所有时间"
-        active-text="指定时间">
+        :active-text="showLatestText">
       </el-switch>
       <el-slider v-model="selectedDays"
         :max="selectedMaxDays"
@@ -174,6 +174,13 @@ export default {
       return this.searchStation.id === '' &&
         this.searchStation.name === '' &&
         this.searchStation.status === ''
+    },
+    showLatestText () {
+      if (this.bySelectingDays) {
+        return '最近' + this.selectedDays + '天'
+      } else {
+        return '指定时间'
+      }
     }
   },
   mounted () {

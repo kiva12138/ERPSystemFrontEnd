@@ -6,7 +6,7 @@
       v-model="selections.bySelectingDays"
       style="display: inline-block; width: 20%;"
       inactive-text="所有时间"
-      active-text="指定时间"/>
+      :active-text="showLatestText"/>
     <el-slider v-model="selections.selectedDays"
       :max="selections.selectedMaxDays"
       style="display: inline-block; width: 70%;"
@@ -133,6 +133,15 @@ export default {
   },
   mounted () {
     this.reloadData()
+  },
+  computed: {
+    showLatestText () {
+      if (this.selections.bySelectingDays) {
+        return '最近' + this.selections.selectedDays + '天'
+      } else {
+        return '指定时间查看'
+      }
+    }
   }
 }
 </script>
