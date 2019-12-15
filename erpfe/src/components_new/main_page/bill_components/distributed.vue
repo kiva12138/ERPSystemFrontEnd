@@ -246,20 +246,20 @@
     :visible.sync="reDistributingVisible"
     width="30%">
     <el-row>
-      <div class='billtip'>工单编号：</div>
-      <div class='billinput'>
+      <div class='distributedbilltip'>工单编号：</div>
+      <div class='distributedbillinput'>
         <span>{{distributeBill.id}}</span>
       </div>
     </el-row>
     <el-row>
-      <div class='billtip'>工单名称：</div>
-      <div class='billinput'>
+      <div class='distributedbilltip'>工单名称：</div>
+      <div class='distributedbillinput'>
         <span>{{distributeBill.name}}</span>
       </div>
     </el-row>
     <el-row>
-      <div class='billtip'>分配工位：</div>
-      <div class='billinput'>
+      <div class='distributedbilltip'>分配工位：</div>
+      <div class='distributedbillinput'>
         <el-input placeholder="请输入工位编号"
           class='billinput'
           v-model="distributeBill.stationId"
@@ -310,28 +310,6 @@ export default {
         total: 90,
         currentPage: 1
       },
-      newDistributedBill: {
-        name: '',
-        outputid: '',
-        outputmount: 1,
-        estimatetime: 12,
-        material: []
-      },
-      newDistributedBillInput: {
-        inputVisible: false,
-        inputValue: ''
-      },
-      editDistributedBill: {
-        name: '',
-        outputname: '',
-        outputmount: 1,
-        estimatetime: 12,
-        material: []
-      },
-      editDistributedBillInput: {
-        inputVisible: false,
-        inputValue: ''
-      },
       distributeBill: {
         id: '',
         name: '',
@@ -370,40 +348,6 @@ export default {
     handlePagination () {
       console.log('Page to ' + this.pagination.currentPage)
       this.reloadData()
-    },
-    handleNewDistributedBillClose (tag) {
-      this.newDistributedBill.material.splice(this.newDistributedBill.material.indexOf(tag), 1)
-    },
-    showNewDistributedBillInput () {
-      this.newDistributedBillInput.inputVisible = true
-      this.$nextTick(_ => {
-        this.$refs.saveTagInput.$refs.input.focus()
-      })
-    },
-    handleNewDistributedBillInputConfirm () {
-      let inputValue = this.newDistributedBillInput.inputValue
-      if (inputValue) {
-        this.newDistributedBill.material.push(inputValue)
-      }
-      this.newDistributedBillInput.inputVisible = false
-      this.newDistributedBillInput.inputValue = ''
-    },
-    handleEditDistributedBillClose (tag) {
-      this.editDistributedBill.material.splice(this.editDistributedBill.material.indexOf(tag), 1)
-    },
-    showEditDistributedBillInput () {
-      this.editDistributedBillInput.inputVisible = true
-      this.$nextTick(_ => {
-        this.$refs.saveTagInput.$refs.input.focus()
-      })
-    },
-    handleEditDistributedBillInputConfirm () {
-      let inputValue = this.editDistributedBillInput.inputValue
-      if (inputValue) {
-        this.editDistributedBill.material.push(inputValue)
-      }
-      this.editDistributedBillInput.inputVisible = false
-      this.editDistributedBillInput.inputValue = ''
     }
   },
   mounted () {
@@ -472,20 +416,5 @@ export default {
   display: inline-block;
   width: 70%;
   margin-top: 10px;
-}
-.el-tag + .el-tag {
-  margin-left: 10px;
-  margin-top: 10px;
-}
-.button-new-tag {
-  margin-left: 10px;
-  height: 32px;
-  line-height: 30px;
-  padding-top: 0px;
-}
-.input-new-tag {
-  width: 90px;
-  margin-left: 10px;
-  vertical-align: bottom;
 }
 </style>
