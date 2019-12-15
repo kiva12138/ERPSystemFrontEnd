@@ -107,7 +107,8 @@
       align="center"
       width="100">
       <template slot-scope="scope">
-        <span>{{billStatus[scope.row.status - 1].name}}</span>
+        <i class="el-icon-circle-check" style="color: #409EFF;"/>
+        <span style="color: #409EFF;">{{billStatus[scope.row.status - 1].name}}</span>
       </template>
     </el-table-column>
     <el-table-column
@@ -158,6 +159,8 @@
       <template slot-scope="scope">
         <el-button type="text" size="small"
           @click='handleEdit(scope.row)'>编辑</el-button>
+        <el-button type="text" size="small"
+          @click='handleDistributed(scope.row)'>分配</el-button>
         <el-button type="text" size="small"
           @click='handleDelete(scope.row.id)'>删除</el-button>
       </template>
@@ -250,6 +253,40 @@
       </div>
     </div>
   </el-drawer>
+
+  <el-dialog
+    :modal="false"
+    title="分配工单"
+    :visible.sync="distributeBillVisible"
+    width="30%">
+    <el-row>
+      <div class='billtip'>工单编号：</div>
+      <div class='billinput'>
+        <span>{{distributingBill.id}}</span>
+      </div>
+    </el-row>
+    <el-row>
+      <div class='billtip'>工单名称：</div>
+      <div class='billinput'>
+        <span>{{distributingBill.name}}</span>
+      </div>
+    </el-row>
+    <el-row>
+      <div class='billtip'>分配工位：</div>
+      <div class='billinput'>
+        <el-input placeholder="请输入工位编号"
+          class='billinput'
+          v-model="distributingBill.stationId"
+          clearable/>
+      </div>
+    </el-row>
+    <span slot="footer" class="dialog-footer">
+      <el-button @click="distributeBillVisible = false">取 消</el-button>
+      <el-button type="primary"
+        @click="handleDistributionSubmit"
+        :disabled="distributeDisabled">确认分配</el-button>
+    </span>
+  </el-dialog>
 
   <el-drawer
     title="修改工单"
@@ -344,6 +381,7 @@ export default {
       testCreatedBill: testcreatedbill,
       newBillVisible: false,
       editBillVisible: false,
+      distributeBillVisible: false,
       dataLoading: false,
       searchBill: {
         id: '',
@@ -378,6 +416,11 @@ export default {
       editBillInput: {
         inputVisible: false,
         inputValue: ''
+      },
+      distributingBill: {
+        id: '',
+        name: '',
+        stationId: ''
       }
     }
   },
@@ -400,6 +443,19 @@ export default {
     },
     handleNewBillSubmit () {
       console.log(this.newBill)
+    },
+    handleDistributed (row) {
+      console.log('Distributing...')
+      this.distributeBillVisible = true
+      this.distributingBill = {
+        id: row.id,
+        name: row.name,
+        stationId: ''
+      }
+    },
+    handleDistributionSubmit () {
+      console.log(this.distributingBill)
+      this.distributeBillVisible = false
     },
     reloadData () {
       console.log('Reload Data......')
@@ -478,6 +534,9 @@ export default {
         this.searchBill.outputclass === '' &&
         this.searchBill.outputname === '' &&
         this.searchBill.materialname === ''
+    },
+    distributeDisabled () {
+      return this.distributingBill.stationId === ''
     }
   }
 }
