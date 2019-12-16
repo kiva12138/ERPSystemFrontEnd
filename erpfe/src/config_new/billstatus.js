@@ -22,6 +22,14 @@ const billstatus = [
   {
     id: '6',
     name: '停滞中'
+  },
+  {
+    id: '7',
+    name: '已完成'
+  },
+  {
+    id: '8',
+    name: '已停止'
   }
 ]
 

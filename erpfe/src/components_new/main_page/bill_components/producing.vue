@@ -160,7 +160,7 @@
       </template>
     </el-table-column>
     <el-table-column
-      label="所需物料"
+      label="已分配物料"
       align="center"
       width="180">
       <template slot-scope="scope">
