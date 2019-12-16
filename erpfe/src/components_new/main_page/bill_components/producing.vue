@@ -207,7 +207,7 @@
       <template slot-scope="scope">
         <el-button type="text" size="small"
           @click='handleReDistribute(scope.row)'>重新分配工时</el-button>
-        <el-button type="text" size="small"
+        <el-button type="text" size="small" style="color: #E6A23C;"
           @click='handleStop(scope.row.id)'>暂停生产</el-button>
       </template>
     </el-table-column>

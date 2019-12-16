@@ -18,6 +18,7 @@ import BillDistributedComp from '@/components_new/main_page/bill_components/dist
 import BillOverallComp from '@/components_new/main_page/bill_components/overall.vue'
 import BillProducingComp from '@/components_new/main_page/bill_components/producing.vue'
 import BillStoppedComp from '@/components_new/main_page/bill_components/stopped.vue'
+import BillOveredComp from '@/components_new/main_page/bill_components/overed.vue'
 
 import StationPage from '@/components_new/main_page/station_components/station_page.vue'
 import StationAcceptedComp from '@/components_new/main_page/station_components/accepted.vue'
@@ -147,6 +148,13 @@ let router = new Router({
           component: BillCompletedComp,
           meta: {
             title: '已完成工单'
+          }
+        },
+        {
+          path: 'overed',
+          component: BillOveredComp,
+          meta: {
+            title: '已停止工单'
           }
         }
       ]

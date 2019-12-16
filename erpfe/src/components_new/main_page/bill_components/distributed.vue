@@ -224,7 +224,7 @@
       <template slot-scope="scope">
         <el-button type="text" size="small"
           @click='handleReDistribute(scope.row)'>重新分配</el-button>
-        <el-button type="text" size="small"
+        <el-button type="text" size="small" style="color: #F56C6C;"
           @click='handleDelete(scope.row.id)'>删除</el-button>
       </template>
     </el-table-column>

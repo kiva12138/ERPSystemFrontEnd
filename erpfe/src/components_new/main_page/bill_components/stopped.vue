@@ -79,10 +79,12 @@
 
   <div style="margin: 10px;">
     <el-button size="small" @click='handleRestart()'
+      icon="el-icon-refresh"
       type="success" :disabled="restartDisabled">
       重新启动选中工单
     </el-button>
     <el-button size="small" @click='handleStop()'
+      icon="el-icon-delete"
       type="danger" :disabled="restartDisabled">
       物料回收并停止选中工单
     </el-button>
