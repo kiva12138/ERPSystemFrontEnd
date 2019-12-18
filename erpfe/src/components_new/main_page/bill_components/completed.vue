@@ -42,6 +42,17 @@
         v-model="searchBill.materialname"
         clearable/>
 
+      <span class="searchdistributedbilltip">订单状态</span>
+      <el-select v-model="searchBill.billstatus" placeholder="请选择种类"
+        class='searchbillinput'>
+        <el-option
+          v-for="item in billStatus"
+          v-if="item.id === '7' || item.id === '8'"
+          :key="item.id"
+          :label="item.name"
+          :value="item.id" />
+      </el-select>
+
       <el-button icon="el-icon-search"
         :disabled='searchDisabled'
         style="margin-left: 40px;"
@@ -121,8 +132,14 @@
       align="center"
       width="100">
       <template slot-scope="scope">
-        <i class="el-icon-circle-check" style="color: #67C23A;"/>
-        <span style="color: #67C23A;">{{billStatus[scope.row.status - 1].name}}</span>
+        <i class="el-icon-circle-check" style="color: #67C23A;" v-if="scope.row.status===7"/>
+        <span style="color: #67C23A;" v-if="scope.row.status===7">
+          {{billStatus[scope.row.status - 1].name}}
+        </span>
+        <i class="el-icon-circle-close" style="color: #F56C6C;" v-if="scope.row.status===8"/>
+        <span style="color: #F56C6C;" v-if="scope.row.status===8">
+          {{billStatus[scope.row.status - 1].name}}
+        </span>
       </template>
     </el-table-column>
     <el-table-column
@@ -208,7 +225,8 @@ export default {
         name: '',
         outputclass: '',
         outputname: '',
-        materialname: ''
+        materialname: '',
+        billstatus: ''
       },
       pagination: {
         pageSize: 10,
@@ -255,7 +273,8 @@ export default {
         this.searchBill.name === '' &&
         this.searchBill.outputclass === '' &&
         this.searchBill.outputname === '' &&
-        this.searchBill.materialname === ''
+        this.searchBill.materialname === '' &&
+        this.searchBill.billstatus === ''
     },
     deleteDisabled () {
       return this.multipleSelection.length === 0

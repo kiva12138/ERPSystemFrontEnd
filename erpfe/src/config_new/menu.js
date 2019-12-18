@@ -50,12 +50,8 @@ const navItemsNew = [
         'url': 'stopped'
       },
       {
-        'name': '已完成工单',
+        'name': '已完成\\停止工单',
         'url': 'completed'
-      },
-      {
-        'name': '已停止工单',
-        'url': 'overed'
       }
     ]
   },
