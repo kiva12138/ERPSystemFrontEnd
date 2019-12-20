@@ -109,6 +109,7 @@
   </div>
 
   <div class="new_equipment_class">
+    <div style="color: #909399; margin: 10px;">注意：此页面的操作除新建设备外应该下放到工位执行，请谨慎操作。</div>
     <el-button icon="el-icon-edit" size="small"
       type="primary" @click='handleNewEquipment'>
         创建新的设备
