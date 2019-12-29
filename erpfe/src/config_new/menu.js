@@ -82,7 +82,7 @@ const navItemsNew = [
         'url': 'equipment'
       },
       {
-        'name': '未接受任务',
+        'name': '待接受任务',
         'url': 'unaccepted'
       },
       {
