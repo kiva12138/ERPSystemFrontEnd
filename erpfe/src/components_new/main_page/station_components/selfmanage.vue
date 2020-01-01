@@ -46,7 +46,7 @@
       </el-row>
     </div>
   </div>
-  <div class="selfmanage_operation">
+  <div class="selfmanage_operation" v-if="selectStationId!==''">
     <el-button type="warning" size="small"
       :disabled="stationData.status===2 || stationData.status===3"
       @click='handleMaintain(scope.row.id)'>维护休整</el-button>
