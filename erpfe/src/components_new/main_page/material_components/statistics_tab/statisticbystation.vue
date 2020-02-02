@@ -6,7 +6,7 @@
       <el-input placeholder="请输入工位编号"
         class='statistic_searchstationinput'
         v-model="searchStation.id"
-        clearable/>
+        type="number"/>
       <span class="statistic_searchstationtip">工位名称：</span>
       <el-input placeholder="请输入工位名称"
         class='statistic_searchstationinput'
@@ -45,23 +45,23 @@
       class="statistic_station_row">
       <el-col v-for="(item, index) in testStatisticStation"
         :key = "index"
-        :span="tableStationSpan[item.span]"
+        :span="randomSpan"
         class="statistic_station_col">
         <el-popover
           placement="top"
-          width="350"
+          width="500"
           trigger="hover">
           <div>
-            <div v-for="(mitem, index1) in item.materialUse" :key="index1">
-              <span style="color: #C0C4CC">{{mitem.materialId}}</span>
-              <span>{{selectedDays}} 天中共使用 {{mitem.materialName}} {{mitem.mount}} 件</span>
-              <span> 平均日使用 {{(mitem.mount / selectedDays).toFixed(2)}} 件</span>
+            <div v-for="(mitem, index1) in item.use" :key="index1">
+              <span style="color: #C0C4CC">{{mitem.id}}</span>
+              <span>{{days}} 天中共使用 {{mitem.name}} {{mitem.mount}} 件</span>
+              <span> 平均日使用 {{(mitem.mount / days).toFixed(2)}} 件</span>
             </div>
             <el-divider></el-divider>
-            <div v-for="(mitem, index2) in item.materialOutput" :key="index2 + 1000">
-              <span style="color: #C0C4CC">{{mitem.materialId}}</span>
-              <span>{{selectedDays}} 天中共产出 {{mitem.materialName}} {{mitem.mount}} 件</span>
-              <span> 平均日产出 {{(mitem.mount / selectedDays).toFixed(2)}} 件</span>
+            <div v-for="(mitem, index2) in item.out" :key="index2 + 1000">
+              <span style="color: #C0C4CC">{{mitem.id}}</span>
+              <span>{{days}} 天中共产出 {{mitem.name}} {{mitem.mount}} 件</span>
+              <span> 平均日产出 {{(mitem.mount / days).toFixed(2)}} 件</span>
             </div>
           </div>
           <div class="station_statistic_grid_content" slot="reference">
@@ -83,12 +83,12 @@
             </div>
             <div>
               <span style="color: #606266;">
-                总计使用{{item.materialUse.length}}种物料
+                总计使用{{item.use.length}}种物料
               </span>
             </div>
             <div>
               <span style="color: #606266;">
-                总计产出{{item.materialOutput.length}}种物料
+                总计产出{{item.out.length}}种物料
               </span>
             </div>
           </div>
@@ -105,7 +105,7 @@
     layout="prev, pager, next"
     style="text-align: center; margin: 20px;"
     @current-change="handlePagination"
-    :total="pagination.stationNumber">
+    :total="pagination.total">
   </el-pagination>
 
 </div>
@@ -113,13 +113,13 @@
 
 <script>
 import stationstatus from '../../../../config_new/stationstatus.js'
-import teststatisticstation from '../../../../config_new/teststatisticstation.js'
+// import teststatisticstation from '../../../../config_new/teststatisticstation.js'
 
 export default {
   name: 'statisticByStation',
   data () {
     return {
-      testStatisticStation: teststatisticstation,
+      testStatisticStation: [],
       stationStatus: stationstatus,
       bySelectingDays: false,
       selectedDays: 7,
@@ -127,8 +127,8 @@ export default {
       dataLoading: false,
       pagination: {
         currentPage: 1,
-        pageSize: 20,
-        stationNumber: 200
+        pageSize: 15,
+        total: 0
       },
       searchStation: {
         id: '',
@@ -153,20 +153,46 @@ export default {
     reloadData () {
       console.log('Reload Data......')
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
-      let i = 0
-      for (i = 0; i < this.testStatisticStation.length; i++) {
-        if (this.testStatisticStation[i].materialUse.length >= 4) {
-          this.testStatisticStation[i].span = 3
-        } else if (this.testStatisticStation[i].materialUse.length === 3) {
-          this.testStatisticStation[i].span = 2
-        } else if (this.testStatisticStation[i].materialUse.length === 2) {
-          this.testStatisticStation[i].span = 1
-        } else {
-          this.testStatisticStation[i].span = 0
-        }
+      var day = 30
+      var id = 0
+      var status = 0
+      if (this.searchStation.id !== '') {
+        id = this.searchStation.id
       }
+      if (this.searchStation.status !== '') {
+        status = this.searchStation.status
+      }
+      if (this.bySelectingDays) {
+        day = this.selectedDays
+      }
+      this.dataLoading = true
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/station/getmaterialdata',
+        params: {
+          id: id,
+          name: this.searchStation.name,
+          status: status,
+          time: day,
+          page: this.pagination.currentPage - 1
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.testStatisticStation = response.data.data
+          this.pagination.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查找失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查找错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
     }
   },
   computed: {
@@ -175,12 +201,23 @@ export default {
         this.searchStation.name === '' &&
         this.searchStation.status === ''
     },
+    days () {
+      if (this.bySelectingDays) {
+        return this.selectedDays
+      } else {
+        return this.selectedMaxDays
+      }
+    },
     showLatestText () {
       if (this.bySelectingDays) {
         return '最近' + this.selectedDays + '天'
       } else {
         return '指定时间'
       }
+    },
+    randomSpan () {
+      var j = Math.random() * 5 + 3
+      return parseInt(j)
     }
   },
   mounted () {

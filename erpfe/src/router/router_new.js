@@ -21,14 +21,14 @@ import BillStoppedComp from '@/components_new/main_page/bill_components/stopped.
 
 import StationPage from '@/components_new/main_page/station_components/station_page.vue'
 import StationAcceptedComp from '@/components_new/main_page/station_components/accepted.vue'
-import StationEquipmentComp from '@/components_new/main_page/station_components/equipment.vue'
+// import StationEquipmentComp from '@/components_new/main_page/station_components/equipment.vue'
 import StationProducingComp from '@/components_new/main_page/station_components/producing.vue'
 import StationSelfManageComp from '@/components_new/main_page/station_components/selfmanage.vue'
 import StationUnacceptedComp from '@/components_new/main_page/station_components/unaccepted.vue'
 
 import StationsPage from '@/components_new/main_page/stations_components/stations_page.vue'
 import StationsOverallComp from '@/components_new/main_page/stations_components/overall.vue'
-import StationsEquipmentComp from '@/components_new/main_page/stations_components/equipment.vue'
+// import StationsEquipmentComp from '@/components_new/main_page/stations_components/equipment.vue'
 
 Vue.use(Router)
 
@@ -165,7 +165,8 @@ let router = new Router({
           meta: {
             title: '工位总览'
           }
-        },
+        }
+        /*,
         {
           path: 'equipment',
           component: StationsEquipmentComp,
@@ -173,6 +174,7 @@ let router = new Router({
             title: '设备总览'
           }
         }
+        */
       ]
     },
     {
@@ -190,6 +192,7 @@ let router = new Router({
             title: '工位自管理'
           }
         },
+        /*
         {
           path: 'equipment',
           component: StationEquipmentComp,
@@ -197,6 +200,7 @@ let router = new Router({
             title: '设备管理'
           }
         },
+        */
         {
           path: 'unaccepted',
           component: StationUnacceptedComp,

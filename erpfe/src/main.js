@@ -6,6 +6,7 @@ import VueSession from 'vue-session'
 import VueCookies from 'vue-cookies'
 import VueResource from 'vue-resource'
 import 'element-ui/lib/theme-chalk/index.css'
+import axios from 'axios'
 
 import global from './config/global.vue'
 
@@ -16,6 +17,9 @@ Vue.use(VueResource)
 
 Vue.config.productionTip = false
 Vue.prototype.GLOBAL = global
+Vue.prototype.$axios = axios
+
+axios.defaults.withCredentials = true
 
 let app = new Vue(
   {

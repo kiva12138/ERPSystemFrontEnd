@@ -7,8 +7,8 @@
       <span class="searchtransporttip">物料编号：</span>
       <el-input placeholder="请输入物料编号"
         class='searchtransportinput'
-        v-model="searchTransport.id"
-        clearable/>
+        type="number"
+        v-model="searchTransport.id"/>
 
       <span class="searchtransporttip">物料名称：</span>
       <el-input placeholder="请输入物料名称"
@@ -35,7 +35,7 @@
   </div>
 
   <div class="new_transport_class">
-    <el-button icon="el-icon-edit"
+    <el-button icon="el-icon-edit" size="small"
       type="primary" @click='handleNewTransport'>
         增加新的配送
     </el-button>
@@ -44,6 +44,7 @@
   <el-table
     class="transport_table_class"
     :data="transportData"
+    size="small"
     :default-sort = "{prop: 'id', order: 'descending'}"
     stripe
     v-loading="dataLoading"
@@ -90,11 +91,10 @@
       align="center"
       width="100">
       <template slot-scope="scope">
-        <span>{{transportClass[scope.row.class-1].name}}</span>
+        <span>{{transportClass[scope.row.mclass-1].name}}</span>
       </template>
     </el-table-column>
     <el-table-column
-      prop="status"
       sortable
       label="物料状态"
       align="center"
@@ -124,7 +124,7 @@
       </template>
     </el-table-column>
     <el-table-column
-      prop="lasttransport"
+      prop="lastransport"
       align="center"
       label="上次配送时间">
     </el-table-column>
@@ -141,12 +141,12 @@
 
   <el-pagination
     class="pagination_class"
-    :page-size="10"
+    :page-size="pageSize"
     :current-page.sync="currentPage"
     background
     layout="prev, pager, next"
     @current-change="handlePagination"
-    :total="transportesNumber">
+    :total="total">
   </el-pagination>
 
   <el-dialog
@@ -159,8 +159,8 @@
         <div class='transporttip'>物料编号：</div>
         <div class='transportinput'>
           <el-input placeholder="请输入物料编号"
-                  v-model="newTransport.id"
-                  clearable/>
+                  type="number"
+                  v-model="newTransport.id"/>
         </div>
       </el-row>
       <el-row>
@@ -180,6 +180,15 @@
         <div class='transportinput'>
           <el-input placeholder="请输入配送数量"
                   v-model="newTransport.mount"
+                  type="number"/>
+        </div>
+      </el-row>
+      <el-row>
+        <div class='transporttip'>配送说明：</div>
+        <div class='transportinput'>
+          <el-input placeholder="请输入配送说明"
+                  v-model="newTransport.description"
+                  type="textarea"
                   clearable/>
         </div>
       </el-row>
@@ -222,16 +231,35 @@
         </div>
       </el-row>
       <el-row>
-        <div class='transporttip'>修改数量：</div>
+        <div class='transporttip'>剩余数量：</div>
+        <div class='transportinput'>
+          {{currentTransport.mount}}
+        </div>
+      </el-row>
+      <el-row>
+        <div class='transporttip'>配送操作：</div>
+        <div class='transportinput'>
+          <el-select v-model="currentTransport.operation" placeholder="请选择种类">
+            <el-option
+              v-for="item in operation"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id" />
+          </el-select>
+        </div>
+      </el-row>
+      <el-row>
+        <div class='transporttip'>配送数量：</div>
         <div class='transportinput'>
           <el-input placeholder="请输入配送数量"
-                  v-model="currentTransport.mount"
-                  clearable/>
+                  v-model="currentTransport.operationmount"
+                  type="number"/>
         </div>
       </el-row>
       <span slot="footer" class="dialog-footer">
         <el-button @click="modifyTransportDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="handleModifySubmit">修 改</el-button>
+        <el-button type="primary" @click="handleModifySubmit"
+          :disabled="newModifySubmitDisabled">修 改</el-button>
       </span>
   </el-dialog>
 
@@ -239,7 +267,7 @@
 </template>
 
 <script>
-import testtransport from '@/config_new/testtransport.js'
+// import testtransport from '@/config_new/testtransport.js'
 import materialclass from '@/config_new/materialclass.js'
 import materialstatus from '@/config_new/materialstatus.js'
 
@@ -253,8 +281,9 @@ export default {
         status: ''
       },
       currentPage: 1,
-      transportesNumber: 20,
-      transportData: testtransport,
+      total: 0,
+      pageSize: 15,
+      transportData: [],
       transportClass: materialclass,
       transportStatus: materialstatus,
       newTransportDialogVisible: false,
@@ -263,14 +292,17 @@ export default {
       newTransport: {
         id: '',
         operation: '',
-        mount: ''
+        mount: '',
+        description: ''
       },
       currentTransport: {
         id: '',
         name: '',
         class: 1,
         lasttransport: '',
-        mount: 0
+        mount: 0,
+        operation: '',
+        operationmount: ''
       },
       operation: [
         {
@@ -288,10 +320,7 @@ export default {
     handleSearch () {
       console.log('Searching...')
       console.log(this.searchTransport)
-      // reload transport data
-      this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      this.searchData()
     },
     handleNewTransport () {
       this.newTransportDialogVisible = true
@@ -304,34 +333,134 @@ export default {
     handleNewTransportSubmit () {
       console.log('New transport......')
       console.log(this.newTransport)
+      var operation = 1
+      if (this.newTransport.operation === 'out') {
+        operation = -1
+      }
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/transport/add',
+        params: {
+          mid: this.newTransport.id,
+          mount: this.newTransport.mount,
+          way: operation,
+          description: this.newTransport.description
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '新增成功。',
+            type: 'success'
+          })
+        } else {
+          this.$message({
+            message: '新增失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '新增错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
       this.newTransportDialogVisible = false
-      // reload transport data
-      this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      this.searchData()
     },
     handleTransport (row) {
       this.modifyTransportDialogVisible = true
       this.currentTransport.id = row.id
       this.currentTransport.name = row.name
-      this.currentTransport.class = row.class
-      this.currentTransport.lasttransport = row.lasttransport
+      this.currentTransport.class = row.mclass
+      this.currentTransport.lasttransport = row.lastransport
       this.currentTransport.mount = row.remain
+      this.currentTransport.operation = ''
+      this.currentTransport.operationmount = ''
     },
     handleModifySubmit () {
       console.log('Modify transport......')
       console.log(this.currentTransport)
-      this.modifyTransportDialogVisible = false
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      var operation = 1
+      if (this.currentTransport.operation === 'out') {
+        operation = -1
+      }
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/transport/add',
+        params: {
+          mid: this.currentTransport.id,
+          mount: this.currentTransport.operationmount,
+          way: operation,
+          description: ''
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '新增成功。',
+            type: 'success'
+          })
+        } else {
+          this.$message({
+            message: '新增失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '新增错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
+      this.modifyTransportDialogVisible = false
     },
     handlePagination () {
       console.log('Page to ' + this.currentPage)
-      // reload transport data
+      this.searchData()
+    },
+    searchData () {
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      var id = 0
+      var name = ''
+      var status = 0
+      if (this.searchTransport.id !== '') {
+        id = this.searchTransport.id
+      }
+      if (this.searchTransport.name !== '') {
+        name = this.searchTransport.name
+      }
+      if (this.searchTransport.status !== '') {
+        status = this.searchTransport.status
+      }
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/material/getcategory',
+        params: {
+          id: id,
+          name: name,
+          status: status,
+          kind: 0,
+          page: this.currentPage - 1,
+          size: this.pageSize
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.transportData = response.data.materials
+          this.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查找错误。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查找错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
     }
   },
   computed: {
@@ -344,7 +473,14 @@ export default {
       return this.newTransport.id === '' ||
         this.newTransport.operation === '' ||
         this.newTransport.mount === ''
+    },
+    newModifySubmitDisabled () {
+      return this.currentTransport.operation === '' ||
+        this.currentTransport.operationmount === ''
     }
+  },
+  mounted () {
+    this.searchData()
   }
 }
 </script>

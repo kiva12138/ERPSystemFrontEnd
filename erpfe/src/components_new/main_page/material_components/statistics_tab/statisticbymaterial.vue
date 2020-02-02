@@ -6,7 +6,7 @@
       <el-input placeholder="请输入物料编号"
         class='statistic_searchstationinput'
         v-model="searchMaterial.id"
-        clearable/>
+        type="number"/>
       <span class="statistic_searchstationtip">物料名称：</span>
       <el-input placeholder="请输入物料名称"
         class='statistic_searchstationinput'
@@ -46,12 +46,12 @@
           trigger="hover">
           <div>
             <div>
-              <span>{{selectedDays}} 天中共使用{{item.use}} 件</span>
-              <span> 平均日使用 {{(item.use / selectedDays).toFixed(2)}} 件</span>
+              <span>{{days}} 天中共使用{{item.use}} 件</span>
+              <span> 平均日使用 {{(item.use / days).toFixed(2)}} 件</span>
             </div>
             <div>
-              <span>{{selectedDays}} 天中共产出 {{item.output}} 件</span>
-              <span> 平均日产出 {{(item.output / selectedDays).toFixed(2)}} 件</span>
+              <span>{{days}} 天中共产出 {{item.output}} 件</span>
+              <span> 平均日产出 {{(item.output / days).toFixed(2)}} 件</span>
             </div>
           </div>
           <el-progress :text-inside="true"
@@ -72,20 +72,20 @@
     layout="prev, pager, next"
     style="text-align: center; margin: 20px;"
     @current-change="handlePagination"
-    :total="pagination.stationNumber">
+    :total="pagination.total">
   </el-pagination>
 
 </div>
 </template>
 
 <script>
-import teststatisticmaterial from '../../../../config_new/teststatisticmaterial.js'
+// import teststatisticmaterial from '../../../../config_new/teststatisticmaterial.js'
 
 export default {
   name: 'statisticByMaterial',
   data () {
     return {
-      testStatisticMaterial: teststatisticmaterial,
+      testStatisticMaterial: [],
       bySelectingDays: false,
       selectedDays: 7,
       selectedMaxDays: 30,
@@ -93,7 +93,7 @@ export default {
       pagination: {
         currentPage: 1,
         pageSize: 10,
-        stationNumber: 200
+        total: 0
       },
       searchMaterial: {
         id: '',
@@ -114,16 +114,51 @@ export default {
       this.reloadData()
     },
     reloadData () {
-      console.log('Reload Data......')
+      var day = 30
+      if (this.bySelectingDays) {
+        day = this.selectedDays
+      }
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/materialproduce/getbydate',
+        params: {
+          id: this.searchMaterial.id,
+          name: this.searchMaterial.name,
+          date: day,
+          page: this.pagination.currentPage - 1,
+          size: this.pagination.pageSize
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.testStatisticMaterial = response.data.data
+          this.pagination.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查找失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查找错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
     }
   },
   computed: {
     searchDisabled () {
       return this.searchMaterial.id === '' &&
         this.searchMaterial.name === ''
+    },
+    days () {
+      if (this.bySelectingDays) {
+        return this.selectedDays
+      } else {
+        return this.selectedMaxDays
+      }
     },
     showLatestText () {
       if (this.bySelectingDays) {

@@ -9,6 +9,7 @@
       :active-text="showLatestText"/>
     <el-slider v-model="selections.selectedDays"
       :max="selections.selectedMaxDays"
+      @change="handleChange"
       style="display: inline-block; width: 70%;"
       :disabled="!selections.bySelectingDays"/>
   </el-row>
@@ -81,7 +82,7 @@
       </span> -->
       <el-progress type="circle"
         color="#67C23A"
-        :percentage="(overallData.finished / overallData.all).toFixed(4) * 100"/>
+        :percentage="(overallData.finished / overallData.all).toFixed(5) * 100"/>
     </div>
     <div>
       <span style="font-size: 100%; color: #303133;">订单完成率</span>
@@ -116,10 +117,10 @@ export default {
       },
       dataLoading: false,
       overallData: {
-        all: 9897,
-        finished: 8897,
-        producing: 873,
-        stopping: 102
+        all: 1,
+        finished: 1,
+        producing: 0,
+        stopping: 0
       }
     }
   },
@@ -127,8 +128,38 @@ export default {
     reloadData () {
       console.log('Reload Data......')
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      var time = this.selections.selectedMaxDays
+      if (this.selections.bySelectingDays) {
+        time = this.selections.selectedDays
+      }
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/bill/overall',
+        params: {
+          time: time
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.overallData.all = response.data.all
+          this.overallData.finished = response.data.finished
+          this.overallData.producing = response.data.producing
+          this.overallData.stopping = response.data.stopping
+        } else {
+          this.$message({
+            message: '查询失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查询错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
+    },
+    handleChange () {
+      this.reloadData()
     }
   },
   mounted () {

@@ -32,9 +32,9 @@
       <el-table-column
         label="产出物料"
         align="center"
-        width="100">
+        width="120">
         <template slot-scope="scope">
-          <span>{{scope.row.output}} * {{scope.row.outputmount}}</span>
+          <span>{{scope.row.output}} * {{scope.row.outputMount}}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -42,7 +42,7 @@
         align="center"
         width="100">
         <template slot-scope="scope">
-          <span>{{materialClass[scope.row.outputclass - 1].name}}</span>
+          <span>{{materialClass[scope.row.outputKind - 1].name}}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -51,9 +51,10 @@
         align="center"
         width="100">
         <template slot-scope="scope">
-          <span>{{scope.row.estimatetime}}小时</span>
+          <span>{{scope.row.estimateTime}}小时</span>
         </template>
       </el-table-column>
+      <!--
       <el-table-column
         sortable
         label="分配设备"
@@ -63,6 +64,7 @@
           <span>{{scope.row.distributedequipment}}号设备</span>
         </template>
       </el-table-column>
+      -->
       <el-table-column
         label="状态"
         align="center"
@@ -83,12 +85,12 @@
             placement="top"
             width="250"
             trigger="hover">
-            <div v-for="(mitem, index1) in scope.row.material" :key="index1">
+            <div v-for="(mitem, index1) in scope.row.materials" :key="index1">
               <span style="color: #C0C4CC">{{mitem.id}}</span>
               <span> {{mitem.name}}</span>
             </div>
             <div slot="reference">
-                <span v-for="(item, index) in scope.row.material" :key="index"
+                <span v-for="(item, index) in scope.row.materials" :key="index"
                 style="white-space: nowrap; text-overflow:ellipsis; overflow:hidden;">
                   {{item.name}} </span>
             </div>
@@ -183,27 +185,10 @@
           </div>
         </el-row>
         <el-row>
-          <div class='stationproducingbilltip'>已产出物料：</div>
+          <div class='stationproducingbilltip'>已产出数量：</div>
           <div class='stationproducingbillinput'>
-            <el-tag
-              :key="tag"
-              v-for="tag in currentBill.haveOutput"
-              closable
-              :disable-transitions="false"
-              @close="handleHaveOutputClose(tag)">
-              {{tag}}
-            </el-tag>
-            <el-input
-              class="input-new-tag"
-              v-if="haveOutputInput.inputVisible"
-              v-model="haveOutputInput.inputValue"
-              ref="saveTagInput"
-              size="small"
-              @keyup.enter.native="handleHaveOutputConfirm"
-              @blur="handleHaveOutputConfirm"/>
-            <el-button v-else class="button-new-tag" size="small" @click="showHaveOutputInput">
-              + 新物料
-            </el-button>
+            <el-input placeholder="请输入停滞原因" v-model="currentBill.haveOutput"
+              type="number" clearable/>
           </div>
         </el-row>
         <el-row>
@@ -262,7 +247,7 @@
 import selectstation from './select_components/selectstation.vue'
 import billstatus from '../../../config_new/billstatus.js'
 import materialclass from '../../../config_new/materialclass.js'
-import teststationunaccbill from '../../../config_new/teststationproducing.js'
+// import teststationunaccbill from '../../../config_new/teststationproducing.js'
 
 export default {
   name: 'Producing',
@@ -274,12 +259,12 @@ export default {
       selectStationId: '',
       billStatus: billstatus,
       materialClass: materialclass,
-      testStationProducingBill: teststationunaccbill,
+      testStationProducingBill: [],
       dataLoading: false,
       stopBillVisible: false,
       pagination: {
-        pageSize: 10,
-        total: 5,
+        pageSize: 15,
+        total: 0,
         currentPage: 1
       },
       currentBill: {
@@ -291,7 +276,7 @@ export default {
         estimatetime: 72,
         material: [],
         reason: '',
-        haveOutput: [],
+        haveOutput: 0,
         haveUsed: []
       },
       haveOutputInput: {
@@ -306,14 +291,64 @@ export default {
   },
   methods: {
     reloadData () {
-      console.log('Reload Data......')
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/bill/findwithstatus',
+        params: {
+          id: 0,
+          name: '',
+          kind: 0,
+          status: 4,
+          output: 0,
+          material: 0,
+          stationId: this.selectStationId,
+          page: this.pagination.currentPage - 1
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.testStationProducingBill = response.data.data
+          this.pagination.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查询失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查询错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
     },
     handleComplete (id) {
-      console.log('Complete......')
-      console.log(id)
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/bill/complete',
+        params: {
+          billId: id
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '已完成任务。',
+            type: 'success'
+          })
+          this.reloadData()
+        } else {
+          this.$message({
+            message: '完成任务失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '完成任务错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     },
     handleStop (row) {
       this.currentBill = {
@@ -321,21 +356,47 @@ export default {
         name: row.name,
         status: row.status,
         output: row.output,
-        outputmount: row.outputmount,
-        estimatetime: row.estimatetime,
-        material: row.material,
+        outputmount: row.outputMount,
+        estimatetime: row.estimateTime,
+        material: row.materials,
         reason: '',
-        haveOutput: [],
+        haveOutput: 0,
         haveUsed: []
       }
       this.stopBillVisible = true
     },
     handleStopSubmit (row) {
-      this.stopBillVisible = false
-      console.log(this.currentBill)
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/bill/stopbystation',
+        data: {
+          id: this.currentBill.id,
+          reason: this.currentBill.reason,
+          haveUsed: this.currentBill.haveUsed,
+          haveOutput: this.currentBill.haveOutput
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '任务停滞成功。',
+            type: 'success'
+          })
+          this.reloadData()
+          this.stopBillVisible = false
+        } else {
+          this.$message({
+            message: '停滞失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '停滞错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     },
     handlePagination () {
-      console.log('Page to ' + this.pagination.currentPage)
       this.reloadData()
     },
     handleHaveOutputClose (tag) {
@@ -374,11 +435,9 @@ export default {
     }
   },
   mounted () {
-    this.reloadData()
     if (this.$cookies.isKey('selectStationId')) {
       this.selectStationId = this.$cookies.get('selectStationId')
-      this.testStationProducingBill = teststationunaccbill
-      this.pagination.total = this.testStationProducingBill.length
+      this.reloadData()
     }
   },
   computed: {

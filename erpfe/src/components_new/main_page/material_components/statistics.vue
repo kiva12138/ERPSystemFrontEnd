@@ -2,6 +2,7 @@
 <div>
   <el-tabs v-model="activeName"
     @tab-click="handleTabClick"
+    :lazy="true"
     class="material_statistic_tab">
     <el-tab-pane label="按物料查看" name="byMaterial"><ByMaterial/></el-tab-pane>
     <el-tab-pane label="按工位查看" name="byStation"><ByStation/></el-tab-pane>

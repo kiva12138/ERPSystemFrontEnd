@@ -36,10 +36,29 @@ export default {
   methods: {
     handleSearch () {
       console.log(this.searchStationId)
-      // Do the work of search
-      this.selectStationId = this.searchStationId
-      this.$cookies.set('selectStationId', this.selectStationId, {expires: '24h'})
-      location.reload()
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/station/staionexist',
+        params: {
+          id: this.searchStationId
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.selectStationId = this.searchStationId
+          this.$cookies.set('selectStationId', this.selectStationId, {expires: '24h'})
+          location.reload()
+        } else {
+          this.$message({
+            message: '选择工位失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '选择工位错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     }
   },
   computed: {

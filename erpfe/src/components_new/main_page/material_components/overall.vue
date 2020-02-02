@@ -8,7 +8,7 @@
       <el-input placeholder="请输入物料编号"
         class='searchmaterialinput'
         v-model="searchMaterial.id"
-        clearable/>
+        type="number"/>
 
       <span class="searchmaterialtip">物料名称：</span>
       <el-input placeholder="请输入物料名称"
@@ -46,6 +46,7 @@
 
   <div class="new_material_class">
     <el-button icon="el-icon-edit"
+      size="small"
       type="primary" @click='handleNewMaterial'>
         增加新的物料种类
     </el-button>
@@ -54,6 +55,7 @@
   <el-table
     class="material_table_class"
     :data="materialData"
+    size="small"
     :default-sort = "{prop: 'id', order: 'descending'}"
     stripe
     v-loading="dataLoading"
@@ -100,7 +102,7 @@
       align="center"
       width="100">
       <template slot-scope="scope">
-        <span>{{materialClass[scope.row.class-1].name}}</span>
+        <span>{{materialClass[scope.row.mclass-1].name}}</span>
       </template>
     </el-table-column>
     <el-table-column
@@ -153,12 +155,12 @@
 
   <el-pagination
     class="pagination_class"
-    :page-size="10"
-    :current-page.sync="currentPage"
+    :page-size="pagination.pageSize"
+    :current-page.sync="pagination.currentPage"
     background
     layout="prev, pager, next"
     @current-change="handlePagination"
-    :total="materialesNumber">
+    :total="pagination.total">
   </el-pagination>
 
   <el-dialog
@@ -247,7 +249,8 @@
       </el-row>
       <span slot="footer" class="dialog-footer">
         <el-button @click="modifyMaterialDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="handleModifySubmit">修 改</el-button>
+        <el-button type="primary" @click="handleModifySubmit"
+          :disabled="editMaterialSubmitDisabled">修 改</el-button>
       </span>
   </el-dialog>
 
@@ -255,7 +258,7 @@
 </template>
 
 <script>
-import testmaterial from '@/config_new/testmaterialcategory.js'
+// import testmaterial from '@/config_new/testmaterialcategory.js'
 import materialclass from '@/config_new/materialclass.js'
 import materialstatus from '@/config_new/materialstatus.js'
 
@@ -269,9 +272,12 @@ export default {
         class: '',
         status: ''
       },
-      currentPage: 1,
-      materialesNumber: 20,
-      materialData: testmaterial,
+      pagination: {
+        pageSize: 15,
+        currentPage: 1,
+        total: 0
+      },
+      materialData: [],
       materialClass: materialclass,
       materialStatus: materialstatus,
       newMaterialDialogVisible: false,
@@ -292,12 +298,10 @@ export default {
   },
   methods: {
     handleSearch () {
-      console.log('Searching...')
       console.log(this.searchMaterial)
-      // reload material data
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      this.searchData()
+      this.dataLoading = false
     },
     handleNewMaterial () {
       this.newMaterialDialogVisible = true
@@ -308,43 +312,162 @@ export default {
       }
     },
     handleNewMaterialSubmit () {
-      console.log('New material......')
-      console.log(this.newMaterial)
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/material/addcategory',
+        params: {
+          name: this.newMaterial.name,
+          kind: this.newMaterial.class,
+          description: this.newMaterial.description
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '新增成功。',
+            type: 'success'
+          })
+        } else {
+          this.$message({
+            message: '新增失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '新增错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
       this.newMaterialDialogVisible = false
-      // reload material data
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      this.searchData()
+      this.dataLoading = false
     },
     handleEdit (row) {
+      console.log(row)
       this.modifyMaterialDialogVisible = true
       this.currentMaterial.id = row.id
       this.currentMaterial.name = row.name
-      this.currentMaterial.class = row.class
+      this.currentMaterial.class = row.mclass
       this.currentMaterial.description = row.description
-      // reload material data
     },
     handleModifySubmit () {
-      console.log('Modify material......')
-      console.log(this.currentMaterial)
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/material/updatecategory',
+        params: {
+          id: this.currentMaterial.id,
+          name: this.currentMaterial.name,
+          kind: this.currentMaterial.class,
+          description: this.currentMaterial.description
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '修改成功。',
+            type: 'success'
+          })
+        } else {
+          this.$message({
+            message: '修改失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '修改错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
       this.modifyMaterialDialogVisible = false
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      this.searchData()
+      this.dataLoading = false
     },
     handleDelete (id) {
-      console.log('Delete' + id)
-      // reload material data
+      this.$confirm('此操作将永久删除该物料种类, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios({
+          method: 'post',
+          url: this.GLOBAL.backEndIp + '/api/material/deletecategory',
+          params: {
+            id: id
+          }
+        }).then(response => {
+          if (response.data.code === 1) {
+            this.$message({
+              message: '删除成功。',
+              type: 'success'
+            })
+          } else {
+            this.$message({
+              message: '删除失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+              type: 'error'
+            })
+          }
+        }).catch(error => {
+          this.$message({
+            message: '删除错误。' + '错误原因：' + error.response.status,
+            type: 'error'
+          })
+        })
+      }).catch(() => {})
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      this.searchData()
+      this.dataLoading = false
     },
     handlePagination () {
-      console.log('Page to ' + this.currentPage)
-      // reload material data
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      this.searchData()
+      this.dataLoading = false
+    },
+    searchData () {
+      var id = 0
+      var name = ''
+      var status = 0
+      var kind = 0
+      if (this.searchMaterial.id !== '') {
+        id = this.searchMaterial.id
+      }
+      if (this.searchMaterial.name !== '') {
+        name = this.searchMaterial.name
+      }
+      if (this.searchMaterial.class !== '') {
+        kind = this.searchMaterial.class
+      }
+      if (this.searchMaterial.status !== '') {
+        status = this.searchMaterial.status
+      }
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/material/getcategory',
+        params: {
+          id: id,
+          name: name,
+          status: status,
+          kind: kind,
+          page: this.pagination.currentPage - 1,
+          size: this.pagination.pageSize
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.materialData = response.data.materials
+          this.pagination.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查找错误。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查找错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     }
   },
   computed: {
@@ -357,7 +480,17 @@ export default {
     newMaterialSubmitDisabled () {
       return this.newMaterial.name === '' ||
         this.newMaterial.class === ''
+    },
+    editMaterialSubmitDisabled () {
+      return this.currentMaterial.name === '' ||
+        this.currentMaterial.class === 0 ||
+        this.currentMaterial.class === ''
     }
+  },
+  mounted () {
+    this.dataLoading = true
+    this.searchData()
+    this.dataLoading = false
   }
 }
 </script>

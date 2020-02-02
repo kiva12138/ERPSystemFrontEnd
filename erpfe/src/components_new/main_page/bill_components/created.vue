@@ -7,6 +7,7 @@
       <el-input placeholder="请输入工单编号"
         class='searchbillinput'
         v-model="searchBill.id"
+        type="number"
         clearable/>
 
       <span class="searchbilltip">工单名称：</span>
@@ -30,15 +31,17 @@
 
     <el-row>
 
-      <span class="searchbilltip">产出物料名称：</span>
-      <el-input placeholder="请输入产出物料名称"
+      <span class="searchbilltip">产出物料编号：</span>
+      <el-input placeholder="请输入产出物料编号"
         class='searchbillinput'
+        type="number"
         v-model="searchBill.outputname"
         clearable/>
 
-      <span class="searchbilltip">所需物料名称：</span>
-      <el-input placeholder="请输入所需物料名称"
+      <span class="searchbilltip">所需物料编号：</span>
+      <el-input placeholder="请输入所需物料编号"
         class='searchbillinput'
+        type="number"
         v-model="searchBill.materialname"
         clearable/>
 
@@ -82,9 +85,9 @@
     <el-table-column
       label="产出物料"
       align="center"
-      width="100">
+      width="120">
       <template slot-scope="scope">
-        <span>{{scope.row.output}} * {{scope.row.outputmount}}</span>
+        <span>{{scope.row.output}} * {{scope.row.outputMount}}</span>
       </template>
     </el-table-column>
     <el-table-column
@@ -92,11 +95,11 @@
       align="center"
       width="100">
       <template slot-scope="scope">
-        <span>{{materialClass[scope.row.outputclass - 1].name}}</span>
+        <span>{{materialClass[scope.row.outputKind - 1].name}}</span>
       </template>
     </el-table-column>
     <el-table-column
-      prop="estimatetime"
+      prop="estimateTime"
       sortable
       label="预计完成时间(时)"
       align="center"
@@ -121,12 +124,12 @@
           placement="top"
           width="250"
           trigger="hover">
-          <div v-for="(mitem, index1) in scope.row.material" :key="index1">
+          <div v-for="(mitem, index1) in scope.row.materials" :key="index1">
             <span style="color: #C0C4CC">{{mitem.id}}</span>
             <span> {{mitem.name}}</span>
           </div>
           <div slot="reference">
-              <span v-for="(item, index) in scope.row.material" :key="index"
+              <span v-for="(item, index) in scope.row.materials" :key="index"
               style="white-space: nowrap; text-overflow:ellipsis; overflow:hidden;">
                 {{item.name}} </span>
           </div>
@@ -194,7 +197,7 @@
       <el-row>
         <div class='billtip'>产出物料：</div>
         <div class='billinput'>
-          <el-input placeholder="请输入产出物料ID" v-model="newBill.outputid" clearable/>
+          <el-input placeholder="请输入产出物料ID" v-model="newBill.outputid" type="number" clearable/>
         </div>
       </el-row>
       <el-row>
@@ -243,9 +246,16 @@
           </span>
         </div>
       </el-row>
+      <el-row>
+        <div class='billtip'>描述：</div>
+        <div class='billinput'>
+          <el-input v-model="newBill.description" type="textarea" placeholder="请输入工单名称" clearable/>
+        </div>
+      </el-row>
       <div class="newbill-drawer__footer">
         <el-row style="text-align: center; margin-top: 40px;">
           <el-button icon="el-icon-edit"
+            :disabled="newDisabled"
             type="primary" @click='handleNewBillSubmit'>
               创 建
           </el-button>
@@ -276,6 +286,7 @@
       <div class='billinput'>
         <el-input placeholder="请输入工位编号"
           class='billinput'
+          type="number"
           v-model="distributingBill.stationId"
           clearable/>
       </div>
@@ -305,7 +316,7 @@
     <el-row>
       <div class='billtip'>产出物料：</div>
       <div class='billinput'>
-        <el-input placeholder="请输入产出物料名称" v-model="editBill.outputname" clearable/>
+        <el-input placeholder="请输入产出物料编号" v-model="editBill.outputname" type="number" clearable/>
       </div>
     </el-row>
     <el-row>
@@ -370,7 +381,7 @@
 <script>
 import billstatus from '../../../config_new/billstatus.js'
 import materialclass from '../../../config_new/materialclass.js'
-import testcreatedbill from '../../../config_new/testcreatedbill.js'
+// import testcreatedbill from '../../../config_new/testcreatedbill.js'
 
 export default {
   name: 'Created',
@@ -378,7 +389,7 @@ export default {
     return {
       billStatus: billstatus,
       materialClass: materialclass,
-      testCreatedBill: testcreatedbill,
+      testCreatedBill: [],
       newBillVisible: false,
       editBillVisible: false,
       distributeBillVisible: false,
@@ -391,8 +402,8 @@ export default {
         materialname: ''
       },
       pagination: {
-        pageSize: 10,
-        total: 90,
+        pageSize: 15,
+        total: 0,
         currentPage: 1
       },
       newBill: {
@@ -400,18 +411,21 @@ export default {
         outputid: '',
         outputmount: 1,
         estimatetime: 12,
-        material: []
+        material: [],
+        description: ''
       },
       newBillInput: {
         inputVisible: false,
         inputValue: ''
       },
       editBill: {
+        id: '',
         name: '',
         outputname: '',
         outputmount: 1,
         estimatetime: 12,
-        material: []
+        material: [],
+        description: ''
       },
       editBillInput: {
         inputVisible: false,
@@ -426,23 +440,51 @@ export default {
   },
   methods: {
     handleSearch () {
-      console.log('Searching...')
       console.log(this.searchBill)
       this.reloadData()
     },
     handleNewBill () {
-      console.log('New Bill...')
       this.newBillVisible = true
       this.newBill = {
         name: '',
         outputid: '',
         outputmount: 1,
         estimatetime: 12,
-        material: []
+        material: [],
+        description: ''
       }
     },
     handleNewBillSubmit () {
-      console.log(this.newBill)
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/bill/createnew',
+        data: {
+          name: this.newBill.name,
+          output: this.newBill.outputid,
+          outputMount: this.newBill.outputmount,
+          estimateTime: this.newBill.estimatetime,
+          materials: this.newBill.material,
+          description: this.newBill.description
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '增加成功。',
+            type: 'success'
+          })
+          this.reloadData()
+        } else {
+          this.$message({
+            message: '增加失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '增加错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     },
     handleDistributed (row) {
       console.log('Distributing...')
@@ -454,39 +496,169 @@ export default {
       }
     },
     handleDistributionSubmit () {
-      console.log(this.distributingBill)
-      this.distributeBillVisible = false
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/bill/distribute',
+        params: {
+          stationId: this.distributingBill.stationId,
+          billId: this.distributingBill.id
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '分配成功。',
+            type: 'success'
+          })
+          this.distributeBillVisible = false
+          this.reloadData()
+        } else {
+          this.$message({
+            message: '分配失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '分配错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     },
     reloadData () {
-      console.log('Reload Data......')
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      var id = 0
+      if (this.searchBill.id !== '') {
+        id = this.searchBill.id
+      }
+      var kind = 0
+      if (this.searchBill.outputclass !== '') {
+        kind = this.searchBill.outputclass
+      }
+      var output = 0
+      if (this.searchBill.outputname !== '') {
+        output = this.searchBill.outputname
+      }
+      var material = 0
+      if (this.searchBill.materialname !== '') {
+        material = this.searchBill.materialname
+      }
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/bill/findwithstatus',
+        params: {
+          id: id,
+          name: this.searchBill.name,
+          kind: kind,
+          status: 1,
+          output: output,
+          material: material,
+          stationId: 0,
+          page: this.pagination.currentPage - 1
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.testCreatedBill = response.data.data
+          this.pagination.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查询失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查询错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
     },
     handleDelete (id) {
-      console.log('Delete......')
-      console.log(id)
+      this.$confirm('此操作将删除该工单，请谨慎操作, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios({
+          method: 'post',
+          url: this.GLOBAL.backEndIp + '/api/bill/delete',
+          params: {
+            billId: id
+          }
+        }).then(response => {
+          if (response.data.code === 1) {
+            this.$message({
+              message: '删除成功。',
+              type: 'success'
+            })
+            this.reloadData()
+          } else {
+            this.$message({
+              message: '删除失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+              type: 'error'
+            })
+          }
+        }).catch(error => {
+          this.$message({
+            message: '删除错误。' + '错误原因：' + error.response.status,
+            type: 'error'
+          })
+        })
+      }).catch(() => {})
     },
     handleEdit (row) {
-      console.log('Edit......')
       this.editBill = {
+        id: row.id,
         name: row.name,
-        outputname: row.output,
-        outputmount: row.outputmount,
-        estimatetime: row.estimatetime,
-        material: []
+        outputname: 0,
+        outputmount: row.outputMount,
+        estimatetime: row.estimateTime,
+        material: [],
+        description: row.description
       }
+      /*
       var i = 0
-      for (i = 0; i < row.material.length; i++) {
-        this.editBill.material.push(row.material[i].name)
+      for (i = 0; i < row.materials.length; i++) {
+        this.editBill.material.push(row.materials[i].name)
       }
+      */
       this.editBillVisible = true
     },
-    handleEditBillSubmit (row) {
-      console.log(this.editBill)
+    handleEditBillSubmit () {
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/bill/edit',
+        data: {
+          id: this.editBill.id,
+          name: this.editBill.name,
+          output: this.editBill.outputname,
+          outputMount: this.editBill.outputmount,
+          estimateTime: this.editBill.estimatetime,
+          materials: this.editBill.material,
+          description: this.editBill.description
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '修改成功。',
+            type: 'success'
+          })
+          this.reloadData()
+        } else {
+          this.$message({
+            message: '修改失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '修改错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.editBillVisible = false
     },
     handlePagination () {
-      console.log('Page to ' + this.pagination.currentPage)
       this.reloadData()
     },
     handleNewBillClose (tag) {
@@ -534,6 +706,11 @@ export default {
         this.searchBill.outputclass === '' &&
         this.searchBill.outputname === '' &&
         this.searchBill.materialname === ''
+    },
+    newDisabled () {
+      return this.newBill.name === '' ||
+        this.newBill.outputid === '' ||
+        this.newBill.material.length === 0
     },
     distributeDisabled () {
       return this.distributingBill.stationId === ''

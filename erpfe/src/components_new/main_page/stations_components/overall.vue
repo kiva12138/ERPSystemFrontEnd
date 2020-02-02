@@ -1,7 +1,7 @@
 <template>
 <div>
   <div class="station_overall_class">
-    <div style="width: 20%; text-align: center; display: inline-block;">
+    <div style="width: 25%; text-align: center; display: inline-block;">
       <div>
         <span style="font-size: 250%; color: #409EFF;">
           {{allData.all}}
@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <div style="width: 20%; text-align: center; display: inline-block;">
+    <div style="width: 25%; text-align: center; display: inline-block;">
       <div>
         <span style="font-size: 250%; color: #67C23A;">
           {{allData.producing}}
@@ -25,7 +25,7 @@
       </div>
     </div>
 
-    <div style="width: 20%; text-align: center; display: inline-block;">
+    <div style="width: 25%; text-align: center; display: inline-block;">
       <div>
         <span style="font-size: 250%; color: #E6A23C;">
           {{allData.resting}}
@@ -37,6 +37,7 @@
       </div>
     </div>
 
+    <!--
     <div style="width: 20%; text-align: center; display: inline-block;">
       <div>
         <span style="font-size: 250%; color: #E6A23C;">
@@ -48,8 +49,9 @@
         <span style="font-size: 100%; color: #303133;">工位部分休整中</span>
       </div>
     </div>
+    -->
 
-    <div style="width: 18%; text-align: center; display: inline-block;">
+    <div style="width: 23%; text-align: center; display: inline-block;">
       <div>
         <span style="font-size: 250%; color: #F56C6C;">
           {{allData.stopped}}
@@ -135,7 +137,6 @@
   </el-drawer>
 
   <el-table
-    size="small"
     :data="stationData"
     :default-sort = "{prop: 'id', order: 'descending'}"
     stripe
@@ -154,8 +155,9 @@
       sortable
       label="工位名称"
       align="center"
-      width="100">
+      width="150">
     </el-table-column>
+    <!--
     <el-table-column
       label="设备数量"
       align="center"
@@ -164,17 +166,22 @@
         <span>{{scope.row.equipmount}}台</span>
       </template>
     </el-table-column>
+    -->
     <el-table-column
-      prop="lastmaintain"
       sortable
       label="上次维护时间"
       align="center"
-      width="180">
+      width="200">
+      <template slot-scope="scope">
+        <span>
+          {{getTimeInFormat(scope.row.lastmaintain)}}
+        </span>
+      </template>
     </el-table-column>
     <el-table-column
       label="状态"
       align="center"
-      width="120">
+      width="200">
       <template slot-scope="scope">
         <i class="el-icon-circle-check" style="color: #67C23A;" v-if="scope.row.status===1"/>
         <span style="color: #67C23A;" v-if="scope.row.status===1">
@@ -188,41 +195,43 @@
         <span style="color: #E6A23C;" v-if="scope.row.status===3">
           {{stationStatus[scope.row.status - 1].name}}
         </span>
+        <!--
         <i class="el-icon-warning-outline" style="color: #E6A23C;" v-if="scope.row.status===4"/>
         <span style="color: #E6A23C;" v-if="scope.row.status===4">
           {{stationStatus[scope.row.status - 1].name}}
         </span>
+         -->
       </template>
     </el-table-column>
-    <el-table-column
-      label="工位设备"
-      align="center">
-      <template slot-scope="scope">
-        <el-popover
-          placement="top"
-          width="250"
-          trigger="hover">
-          <div v-for="(mitem, index1) in scope.row.equipment" :key="index1">
-            <span style="color: #C0C4CC; margin-right: 10px;">{{mitem.id}}</span>
-            <span> {{mitem.name}}</span>
-          </div>
-          <div slot="reference">
-              <span v-for="(item, index) in scope.row.equipment" :key="index"
-              style="white-space: nowrap; text-overflow:ellipsis; overflow:hidden;">
-                {{item.name}} </span>
-          </div>
-        </el-popover>
-      </template>
-    </el-table-column>
+<!--     <el-table-column
+  label="工位设备"
+  align="center">
+  <template slot-scope="scope">
+    <el-popover
+      placement="top"
+      width="250"
+      trigger="hover">
+      <div v-for="(mitem, index1) in scope.row.equipment" :key="index1">
+        <span style="color: #C0C4CC; margin-right: 10px;">{{mitem.id}}</span>
+        <span> {{mitem.name}}</span>
+      </div>
+      <div slot="reference">
+          <span v-for="(item, index) in scope.row.equipment" :key="index"
+          style="white-space: nowrap; text-overflow:ellipsis; overflow:hidden;">
+            {{item.name}} </span>
+      </div>
+    </el-popover>
+  </template>
+</el-table-column> -->
     <el-table-column
       fixed="right"
       label="操作"
-      width="250">
+      width="350">
       <template slot-scope="scope">
         <el-button type="text" size="small"
           @click='handleEditName(scope.row)'>编辑名称</el-button>
 
-        <el-button type="text" size="small" v-if="scope.row.status===1 || scope.row.status===4"
+        <el-button type="text" size="small" v-if="scope.row.status===1"
           @click='handleMaintain(scope.row.id)' style="color: #E6A23C;">维护休整</el-button>
 
         <el-button type="text" size="small" v-if="scope.row.status===2 || scope.row.status===3"
@@ -277,7 +286,7 @@
 
 <script>
 import stationstatus from '../../../config_new/stationstatus.js'
-import stationData from '../../../config_new/teststations.js'
+// import stationData from '../../../config_new/teststations.js'
 
 export default {
   name: 'Overall',
@@ -285,11 +294,10 @@ export default {
     return {
       dataLoading: false,
       allData: {
-        all: 204,
-        producing: 180,
-        stopped: 14,
-        resting: 4,
-        partresting: 6
+        all: 1,
+        producing: 1,
+        stopped: 0,
+        resting: 0
       },
       searchStationOverall: {
         id: '',
@@ -297,7 +305,7 @@ export default {
         status: ''
       },
       stationStatus: stationstatus,
-      stationData: stationData,
+      stationData: [],
       newStationVisible: false,
       editStationNameVisible: false,
       newStation: {
@@ -308,8 +316,8 @@ export default {
         name: ''
       },
       pagination: {
-        pageSize: 10,
-        total: 90,
+        pageSize: 15,
+        total: 0,
         currentPage: 1
       }
     }
@@ -318,18 +326,81 @@ export default {
     reloadData () {
       console.log('Reload Data......')
       this.dataLoading = true
+      /*
       var self = this
       setTimeout(function () { self.dataLoading = false }, 1000)
+      */
+      var id = 0
+      if (this.searchStationOverall.id !== '') {
+        id = this.searchStationOverall.id
+      }
+      var status = 0
+      if (this.searchStationOverall.status !== '') {
+        status = this.searchStationOverall.status
+      }
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/station/find',
+        params: {
+          id: id,
+          name: this.searchStationOverall.name,
+          status: status,
+          page: this.pagination.currentPage - 1,
+          size: this.pagination.pageSize
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.stationData = response.data.data
+          this.pagination.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查询失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查询错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
     },
     handleSearch () {
       console.log(this.searchStationOverall)
+      this.reloadData()
     },
     handleNewStation () {
       this.newStationVisible = true
     },
     handleNewStationSubmit () {
       console.log(this.newStation)
-      this.newStationVisible = false
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/station/new',
+        params: {
+          name: this.newStation.name
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '新建成功。',
+            type: 'success'
+          })
+          this.newStationVisible = false
+          this.reloadData()
+        } else {
+          this.$message({
+            message: '新建失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '新建错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     },
     handleEditName (row) {
       this.editStationNameVisible = true
@@ -339,28 +410,186 @@ export default {
       }
     },
     handleModifySubmit () {
-      console.log(this.currentStation)
-      this.editStationNameVisible = false
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/station/edit',
+        params: {
+          id: this.currentStation.id,
+          name: this.currentStation.name
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.editStationNameVisible = false
+          this.$message({
+            message: '修改成功。',
+            type: 'success'
+          })
+          this.reloadData()
+        } else {
+          this.$message({
+            message: '修改失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '修改错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     },
     handleMaintain (id) {
-      console.log('Maintain ' + id)
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/station/maintain',
+        params: {
+          id: id
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '维护成功。',
+            type: 'success'
+          })
+          this.reloadData()
+        } else {
+          this.$message({
+            message: '维护失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '维护错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     },
     handleRecover (id) {
-      console.log('Recover ' + id)
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/station/reproduce',
+        params: {
+          id: id
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '恢复生产成功。',
+            type: 'success'
+          })
+          this.reloadData()
+        } else {
+          this.$message({
+            message: '恢复生产失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '恢复生产错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     },
     handleDelete (id) {
-      console.log('Delete ' + id)
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/station/delete',
+        params: {
+          id: id
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '删除成功。',
+            type: 'success'
+          })
+          this.reloadData()
+        } else {
+          this.$message({
+            message: '删除失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '删除错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     },
     handleStop (id) {
-      console.log('Stop ' + id)
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/station/stopproduce',
+        params: {
+          id: id
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '停工成功。',
+            type: 'success'
+          })
+          this.reloadData()
+        } else {
+          this.$message({
+            message: '停工失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '停工错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     },
     handlePagination () {
-      console.log('Page to ' + this.pagination.currentPage)
       this.reloadData()
+    },
+    getTimeInFormat (time) {
+      if (time === undefined) {
+        return ''
+      }
+      var dateStrs = time.split('T')[0].split('-')
+      var timeStrs = time.split('T')[1].split('.')[0].split(':')
+      var year = parseInt(dateStrs[0], 10)
+      var month = parseInt(dateStrs[1], 10) + 1
+      var day = parseInt(dateStrs[2], 10)
+      var hour = parseInt(timeStrs[0], 10)
+      var minute = parseInt(timeStrs[1], 10)
+      var second = parseInt(timeStrs[2], 10)
+      return year + '年' + month + '月' + day + '日 ' +
+        hour + ':' + minute + ':' + second
     }
   },
   mounted () {
     this.reloadData()
+    this.$axios({
+      method: 'get',
+      url: this.GLOBAL.backEndIp + '/api/station/overall'
+    }).then(response => {
+      if (response.data.code === 1) {
+        this.allData = {
+          all: response.data.all,
+          producing: response.data.producing,
+          stopped: response.data.stopped,
+          resting: response.data.maintain
+        }
+      } else {
+        this.$message({
+          message: '查询失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+          type: 'error'
+        })
+      }
+    }).catch(error => {
+      this.$message({
+        message: '查询错误。' + '错误原因：' + error.response.status,
+        type: 'error'
+      })
+    })
   },
   computed: {
     searchDisabled () {
@@ -370,6 +599,9 @@ export default {
     },
     modifyDisabled () {
       return this.currentStation.name === ''
+    },
+    newSubmitDisabled () {
+      return this.newStation.name === ''
     }
   }
 }

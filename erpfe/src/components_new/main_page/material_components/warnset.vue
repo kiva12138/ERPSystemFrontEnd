@@ -2,6 +2,7 @@
 <div>
   <el-tabs v-model="activeName"
     @tab-click="handleTabClick"
+    :lazy="true"
     class="material_statistic_tab">
     <el-tab-pane label="总体配置" name="all"><All/></el-tab-pane>
     <el-tab-pane label="单独配置" name="onebyone"><OneByOne/></el-tab-pane>

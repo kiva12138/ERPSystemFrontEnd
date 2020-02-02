@@ -45,7 +45,37 @@ export default {
   },
   methods: {
     handleSubmit () {
-      console.log(this.current)
+      this.$confirm('此操作将改变所有物料的阈值，请谨慎操作, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios({
+          method: 'post',
+          url: this.GLOBAL.backEndIp + '/api/material/updateallthreshold',
+          params: {
+            warn: this.current.warn,
+            danger: this.current.error
+          }
+        }).then(response => {
+          if (response.data.code === 1) {
+            this.$message({
+              message: '修改成功。',
+              type: 'success'
+            })
+          } else {
+            this.$message({
+              message: '修改失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+              type: 'error'
+            })
+          }
+        }).catch(error => {
+          this.$message({
+            message: '修改错误。' + '错误原因：' + error.response.status,
+            type: 'error'
+          })
+        })
+      }).catch(() => {})
     }
   }
 }

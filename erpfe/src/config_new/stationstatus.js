@@ -10,11 +10,13 @@ const stationstatus = [
   {
     id: '3',
     name: '休整中'
-  },
+  }
+  /*,
   {
     id: '4',
     name: '部分休整中'
   }
+  */
 ]
 
 export default stationstatus

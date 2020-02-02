@@ -11,12 +11,12 @@
       <el-input placeholder="请输入物料编号"
         class='searchcurrentinput'
         v-model="searchCurrent.materialId"
-        clearable/>
+        type="number"/>
 
-      <span class="searchcurrenttip">按工位筛选：</span>
-      <el-input placeholder="请输入物料名称"
+      <span class="searchcurrenttip">按工位名称：</span>
+      <el-input placeholder="请输入工位名称"
         class='searchcurrentinput'
-        v-model="searchCurrent.stationId"
+        v-model="searchCurrent.stationName"
         clearable/>
 
       <el-button icon="el-icon-search"
@@ -35,15 +35,15 @@
       class="material_current_row">
       <el-col v-for="(item, index) in testMaterialCurrent"
         :key = "index"
-        :span="tableStationSpan[item.span]"
+        :span="randomSpan"
         class="material_current_col">
         <el-popover
           placement="top"
           width="250"
           trigger="hover">
-          <div v-for="(mitem, index) in item.material" :key="index">
-            <span style="color: #C0C4CC">{{mitem.materialId}}</span>
-            <span>{{mitem.materialName}}</span>
+          <div v-for="(mitem, index) in item.uses" :key="index">
+            <span style="color: #C0C4CC">{{mitem.id}}</span>
+            <span>{{mitem.name}}</span>
             <span style="color: #67C23A" v-if="item.status===1">
               正在使用{{mitem.mount}}件
             </span>
@@ -58,8 +58,8 @@
             </span>
           </div>
           <div class="grid-content" slot="reference">
-            <div><span style="color: #909399;">编号:{{item.stationid}}</span></div>
-            <div>{{item.stationname}} {{item.equipment}}台设备</div>
+            <div><span style="color: #909399;">编号:{{item.id}}</span></div>
+            <div>{{item.name}}</div>
             <div v-if="item.status===1" style="color: #67C23A;">
               {{stationStatus[item.status-1].name}}
             </div>
@@ -101,7 +101,7 @@
 </template>
 
 <script>
-import testMaterialCurrent from '../../../config_new/testmaterialcurrent.js'
+// import testMaterialCurrent from '../../../config_new/testmaterialcurrent.js'
 import stationstatus from '../../../config_new/stationstatus.js'
 
 export default {
@@ -113,15 +113,15 @@ export default {
       hintText2: '点击具体工位以查看具体物料情况',
       searchCurrent: {
         materialId: '',
-        stationId: ''
+        stationName: ''
       },
       dataLoading: false,
-      testMaterialCurrent: testMaterialCurrent,
+      testMaterialCurrent: [],
       stationStatus: stationstatus,
       pagination: {
         currentPage: 1,
         pageSize: 50,
-        stationNumber: 200
+        stationNumber: 0
       },
       tableGutter: 10,
       tableStationSpan: [2, 4, 6, 8]
@@ -129,30 +129,43 @@ export default {
   },
   methods: {
     reloadData () {
-      console.log('Reload Data......')
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/station/getcurrent',
+        params: {
+          mid: this.searchCurrent.materialId,
+          sname: this.searchCurrent.stationName,
+          page: this.pagination.currentPage - 1,
+          size: this.pagination.pageSize
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.testMaterialCurrent = response.data.data
+          this.pagination.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查找失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查找错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
       let i = 0
       for (i = 0; i < this.testMaterialCurrent.length; i++) {
-        if (this.testMaterialCurrent[i].equipment >= 4) {
-          this.testMaterialCurrent[i].span = 3
-        } else if (this.testMaterialCurrent[i].equipment === 3) {
-          this.testMaterialCurrent[i].span = 2
-        } else if (this.testMaterialCurrent[i].equipment === 2) {
-          this.testMaterialCurrent[i].span = 1
-        } else {
-          this.testMaterialCurrent[i].span = 0
-        }
+        this.testMaterialCurrent[i].span = Math.random() * 4
       }
     },
     handleSearch () {
-      console.log('Searching...')
       console.log(this.searchCurrent)
       this.reloadData()
     },
     handlePagination () {
-      console.log('Page to ' + this.pagination.currentPage)
       this.reloadData()
     }
   },
@@ -163,6 +176,10 @@ export default {
     searchDisabled () {
       return this.searchCurrent.materialId === '' &&
         this.searchCurrent.stationId === ''
+    },
+    randomSpan () {
+      var j = Math.random() * 5 + 3
+      return parseInt(j)
     }
   }
 }

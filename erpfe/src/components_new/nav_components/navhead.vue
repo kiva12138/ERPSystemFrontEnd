@@ -26,12 +26,12 @@
     class="login_dialog_class"
     title="请输入管理用户以及密码"
     :visible.sync="dialogVisible"
-    zIndex="top"
+    :modal="false"
     width="30%">
       <el-row>
-        <div class='idtip'>ID：</div>
+        <div class='idtip'>名称：</div>
         <div class='idinput'>
-          <el-input placeholder="请输入您的ID"
+          <el-input placeholder="请输入您的用户名"
                   v-model="userid"
                   clearable/>
         </div>
@@ -54,13 +54,14 @@
     class="modify_password_dialog_class"
     title="密码修改"
     :visible.sync="modifyDialogVisibe"
-    zIndex="top"
+    :modal="false"
     width="30%">
       <el-row>
         <div class='oldpasstip'>旧密码：</div>
         <div class='oldpassinput'>
           <el-input placeholder="请输入您的旧密码"
                   v-model="oldpass"
+                  type='password'
                   clearable/>
         </div>
       </el-row>
@@ -84,7 +85,28 @@
       </el-row>
       <span slot="footer" class="dialog-footer">
         <el-button @click="modifyDialogVisibe = false">取 消</el-button>
-        <el-button type="primary" @click="handleModifyPassword">修 改</el-button>
+        <el-button type="primary" @click="handleModifyPassword"
+          :disabled="modifyPassDisable">修 改</el-button>
+      </span>
+  </el-dialog>
+  <el-dialog
+    class="modify_password_dialog_class"
+    title="资料修改"
+    :visible.sync="modifyNameDialogVisibe"
+    :modal="false"
+    width="30%">
+      <el-row>
+        <div class='newpasstip2'>新用户名：</div>
+        <div class='newpassinput2'>
+          <el-input placeholder="请输入新的用户名"
+                  v-model="newname"
+                  clearable/>
+        </div>
+      </el-row>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="modifyNameDialogVisibe = false">取 消</el-button>
+        <el-button type="primary" @click="handleModifyName"
+          :disabled="modifyNameDisable">修 改</el-button>
       </span>
   </el-dialog>
 </div>
@@ -98,11 +120,13 @@ export default {
       login: false,
       dialogVisible: false,
       modifyDialogVisibe: false,
+      modifyNameDialogVisibe: false,
       userid: '',
       password: '',
       oldpass: '',
       newpass: '',
       newpass2: '',
+      newname: '',
       navHeadItemsLogin: ['登出', '修改资料', '修改密码'],
       navHeadItemsNotLogin: ['登录']
     }
@@ -112,32 +136,141 @@ export default {
       if (!this.$cookies.isKey('login') && navheadItem === '登录') {
         this.dialogVisible = true
       } else if (this.$cookies.isKey('login') && navheadItem === '登出') {
-        console.log('Log Out')
+        this.$axios({
+          method: 'post',
+          url: this.GLOBAL.backEndIp + '/logout'
+        }).then(response => {
+          this.$notify.success({
+            title: '成功退出',
+            message: '如需操作需要进行登录。'
+          })
+        }).catch(error => {
+          console.log(error)
+          this.$message({
+            message: '退出失败，请刷新页面',
+            type: 'error'
+          })
+        })
         this.$cookies.remove('login')
         this.$cookies.remove('userName')
+        this.$cookies.remove('userid')
         location.reload()
       } else if (this.$cookies.isKey('login') && navheadItem === '修改密码') {
         this.modifyDialogVisibe = true
+      } else if (this.$cookies.isKey('login') && navheadItem === '修改资料') {
+        this.modifyNameDialogVisibe = true
       }
       this.login = this.$cookies.isKey('login')
     },
     handleLogin (done) {
-      console.log('Login')
-      this.dialogVisible = false
-      this.$cookies.set('login', 'true', {expires: '24h'})
-      this.$cookies.set('userName', 'Tom', {expires: '24h'})
-      location.reload()
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/login',
+        params: {
+          name: this.userid,
+          password: this.password
+        }
+      }).then(response => {
+        if (response.data.status === 200) {
+          this.dialogVisible = false
+          this.$cookies.set('login', 'true', {expires: '1h'})
+          this.$cookies.set('userName', this.userid, {expires: '1h'})
+          this.$cookies.set('userid', response.data.userid, {expires: '1h'})
+          location.reload()
+          this.$notify.success({
+            title: '登录成功',
+            message: '您可以进行系统管理了。'
+          })
+        } else {
+          this.$message({
+            message: '登录失败，请检查用户名与密码。错误码-' + response.data.status,
+            type: 'warning'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '登录失败，请检查用户名与密码。错误码-' + error.response.data.status,
+          type: 'error'
+        })
+      })
     },
     handleModifyPassword (done) {
-      console.log('Login')
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/user/updatepassword',
+        params: {
+          id: this.$cookies.get('userid'),
+          password: this.newpass
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$notify.success({
+            title: '修改成功',
+            message: '您需要再次登录才能进行管理。'
+          })
+        } else {
+          this.$message({
+            message: '修改失败。错误码-' + response.data.code,
+            type: 'warning'
+          })
+        }
+      }).catch(error => {
+        console.log(error)
+        this.$message({
+          message: '退出失败，请刷新页面',
+          type: 'error'
+        })
+      })
       this.modifyDialogVisibe = false
       this.$cookies.remove('login')
       this.$cookies.remove('userName')
+      this.$cookies.remove('userid')
+      location.reload()
+    },
+    handleModifyName (done) {
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/user/updatename',
+        params: {
+          id: this.$cookies.get('userid'),
+          name: this.newname
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$notify.success({
+            title: '修改成功',
+            message: '您需要再次登录才能进行管理。'
+          })
+        } else {
+          this.$message({
+            message: '修改失败。错误码-' + response.data.code,
+            type: 'warning'
+          })
+        }
+      }).catch(error => {
+        console.log(error)
+        this.$message({
+          message: '退出失败，请刷新页面',
+          type: 'error'
+        })
+      })
+      this.modifyNameDialogVisibe = false
+      this.$cookies.remove('login')
+      this.$cookies.remove('userName')
+      this.$cookies.remove('userid')
       location.reload()
     }
   },
   mounted () {
     this.login = this.$cookies.isKey('login')
+  },
+  computed: {
+    modifyNameDisable () {
+      return this.newname === ''
+    },
+    modifyPassDisable () {
+      return this.oldpass === '' || this.newpass === '' || this.newpass !== this.newpass2
+    }
   }
 }
 </script>

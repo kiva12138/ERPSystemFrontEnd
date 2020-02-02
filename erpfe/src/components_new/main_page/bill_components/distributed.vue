@@ -26,6 +26,7 @@
       <span class="searchdistributedbilltip">工单编号：</span>
       <el-input placeholder="请输入工单编号"
         class='searchdistributedbillinput'
+        type="number"
         v-model="searchDistributedBill.id"
         clearable/>
 
@@ -50,21 +51,24 @@
       <el-input placeholder="请输入工位编号"
         class='searchdistributedbillinput'
         v-model="searchDistributedBill.station"
+        type="number"
         clearable/>
 
     </el-row>
 
     <el-row>
 
-      <span class="searchdistributedbilltip">产出物料名称：</span>
-      <el-input placeholder="请输入产出物料名称"
+      <span class="searchdistributedbilltip">产出物料编号：</span>
+      <el-input placeholder="请输入产出物料编号"
         class='searchdistributedbillinput'
         v-model="searchDistributedBill.outputname"
+        type="number"
         clearable/>
 
-      <span class="searchdistributedbilltip">所需物料名称：</span>
-      <el-input placeholder="请输入所需物料名称"
+      <span class="searchdistributedbilltip">所需物料编号：</span>
+      <el-input placeholder="请输入所需物料编号"
         class='searchdistributedbillinput'
+        type="number"
         v-model="searchDistributedBill.materialname"
         clearable/>
 
@@ -107,14 +111,14 @@
       sortable
       label="工单名称"
       align="center"
-      width="100">
+      width="120">
     </el-table-column>
     <el-table-column
       label="产出物料"
       align="center"
-      width="100">
+      width="120">
       <template slot-scope="scope">
-        <span>{{scope.row.output}} * {{scope.row.outputmount}}</span>
+        <span>{{scope.row.output}}*{{scope.row.outputMount}}</span>
       </template>
     </el-table-column>
     <el-table-column
@@ -122,18 +126,18 @@
       align="center"
       width="100">
       <template slot-scope="scope">
-        <span>{{materialClass[scope.row.outputclass - 1].name}}</span>
+        <span>{{materialClass[scope.row.outputKind - 1].name}}</span>
       </template>
     </el-table-column>
     <el-table-column
-      prop="estimatetime"
+      prop="estimateTime"
       sortable
       label="预计工时(时)"
       align="center"
       width="140">
     </el-table-column>
     <el-table-column
-      prop="distributedStation"
+      prop="station"
       sortable
       label="分配工位"
       align="center"
@@ -166,11 +170,11 @@
           width="250"
           trigger="hover">
           <div>
-            {{scope.row.meta.reason}}
+            {{scope.row.refuseReason}}
           </div>
           <div slot="reference">
               <span style="white-space: nowrap; text-overflow:ellipsis; overflow:hidden;">
-                {{scope.row.meta.reason}}
+                {{scope.row.refuseReason}}
               </span>
           </div>
         </el-popover>
@@ -185,12 +189,12 @@
           placement="top"
           width="250"
           trigger="hover">
-          <div v-for="(mitem, index1) in scope.row.material" :key="index1">
+          <div v-for="(mitem, index1) in scope.row.materials" :key="index1">
             <span style="color: #C0C4CC">{{mitem.id}}</span>
             <span> {{mitem.name}}</span>
           </div>
           <div slot="reference">
-              <span v-for="(item, index) in scope.row.material" :key="index"
+              <span v-for="(item, index) in scope.row.materials" :key="index"
               style="white-space: nowrap; text-overflow:ellipsis; overflow:hidden;">
                 {{item.name}} </span>
           </div>
@@ -280,7 +284,7 @@
 <script>
 import billstatus from '../../../config_new/billstatus.js'
 import materialclass from '../../../config_new/materialclass.js'
-import testdistributedbill from '../../../config_new/testdistributedbill.js'
+// import testdistributedbill from '../../../config_new/testdistributedbill.js'
 
 export default {
   name: 'Distributed',
@@ -288,13 +292,13 @@ export default {
     return {
       billStatus: billstatus,
       materialClass: materialclass,
-      testDistributedBill: testdistributedbill,
+      testDistributedBill: [],
       editDistributedBillVisible: false,
       reDistributingVisible: false,
       dataLoading: false,
       distributedData: {
-        distributed: 873,
-        stationRejected: 201
+        distributed: 0,
+        stationRejected: 0
       },
       searchDistributedBill: {
         id: '',
@@ -302,12 +306,12 @@ export default {
         outputclass: '',
         outputname: '',
         materialname: '',
-        billstatus: '',
+        billstatus: '待接收',
         station: ''
       },
       pagination: {
-        pageSize: 10,
-        total: 90,
+        pageSize: 15,
+        total: 0,
         currentPage: 1
       },
       distributeBill: {
@@ -319,19 +323,98 @@ export default {
   },
   methods: {
     handleSearch () {
-      console.log('Searching...')
-      console.log(this.searchDistributedBill)
       this.reloadData()
     },
     reloadData () {
       console.log('Reload Data......')
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      var id = 0
+      if (this.searchDistributedBill.id !== '') {
+        id = this.searchDistributedBill.id
+      }
+      var kind = 0
+      if (this.searchDistributedBill.outputclass !== '') {
+        kind = this.searchDistributedBill.outputclass
+      }
+      var output = 0
+      if (this.searchDistributedBill.outputname !== '') {
+        output = this.searchDistributedBill.outputname
+      }
+      var material = 0
+      if (this.searchDistributedBill.materialname !== '') {
+        material = this.searchDistributedBill.materialname
+      }
+      var station = 0
+      if (this.searchDistributedBill.staion !== '') {
+        station = this.searchDistributedBill.station
+      }
+      var status = 2
+      if (this.searchDistributedBill.billstatus !== '待接收') {
+        status = this.searchDistributedBill.billstatus
+      }
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/bill/findwithstatus',
+        params: {
+          id: id,
+          name: this.searchDistributedBill.name,
+          kind: kind,
+          status: status,
+          output: output,
+          material: material,
+          stationId: station,
+          page: this.pagination.currentPage - 1
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.testDistributedBill = response.data.data
+          this.pagination.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查询失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查询错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
     },
     handleDelete (id) {
-      console.log('Delete......')
-      console.log(id)
+      this.$confirm('此操作将删除该工单，请谨慎操作, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios({
+          method: 'post',
+          url: this.GLOBAL.backEndIp + '/api/bill/delete',
+          params: {
+            billId: id
+          }
+        }).then(response => {
+          if (response.data.code === 1) {
+            this.$message({
+              message: '删除成功。',
+              type: 'success'
+            })
+            this.reloadData()
+          } else {
+            this.$message({
+              message: '删除失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+              type: 'error'
+            })
+          }
+        }).catch(error => {
+          this.$message({
+            message: '删除错误。' + '错误原因：' + error.response.status,
+            type: 'error'
+          })
+        })
+      }).catch(() => {})
     },
     handleReDistribute (row) {
       this.reDistributingVisible = true
@@ -342,16 +425,65 @@ export default {
       }
     },
     handleReDistributeSubmit (row) {
-      console.log(this.distributeBill)
-      this.reDistributingVisible = false
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/bill/distribute',
+        params: {
+          stationId: this.distributeBill.stationId,
+          billId: this.distributeBill.id
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '分配成功。',
+            type: 'success'
+          })
+          this.reDistributingVisible = false
+          this.reloadData()
+        } else {
+          this.$message({
+            message: '分配失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '分配错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     },
     handlePagination () {
-      console.log('Page to ' + this.pagination.currentPage)
       this.reloadData()
     }
   },
   mounted () {
     this.reloadData()
+    this.$axios({
+      method: 'get',
+      url: this.GLOBAL.backEndIp + '/api/bill/alldata'
+    }).then(response => {
+      if (response.data.code === 1) {
+        this.$message({
+          message: '查询成功。',
+          type: 'success'
+        })
+        this.distributedData = {
+          distributed: response.data.waiting + response.data.refused,
+          stationRejected: response.data.refused
+        }
+      } else {
+        this.$message({
+          message: '查询失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+          type: 'error'
+        })
+      }
+    }).catch(error => {
+      this.$message({
+        message: '查询错误。' + '错误原因：' + error.response.status,
+        type: 'error'
+      })
+    })
   },
   computed: {
     searchDisabled () {

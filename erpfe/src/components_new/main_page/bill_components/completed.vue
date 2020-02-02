@@ -30,19 +30,21 @@
 
     <el-row>
 
-      <span class="searchbilltip">产出物料名称：</span>
-      <el-input placeholder="请输入产出物料名称"
+      <span class="searchbilltip">产出物料编号：</span>
+      <el-input placeholder="请输入产出物料编号"
         class='searchbillinput'
+        type="number"
         v-model="searchBill.outputname"
         clearable/>
 
-      <span class="searchbilltip">所需物料名称：</span>
-      <el-input placeholder="请输入所需物料名称"
+      <span class="searchbilltip">所需物料编号：</span>
+      <el-input placeholder="请输入所需物料编号"
         class='searchbillinput'
+        type="number"
         v-model="searchBill.materialname"
         clearable/>
 
-      <span class="searchdistributedbilltip">订单状态</span>
+      <span class="searchbilltip">订单状态</span>
       <el-select v-model="searchBill.billstatus" placeholder="请选择种类"
         class='searchbillinput'>
         <el-option
@@ -72,6 +74,7 @@
   <el-table
     class="bill_table_class"
     :data="testCompleteBill"
+    size="small"
     :default-sort = "{prop: 'id', order: 'descending'}"
     stripe
     v-loading="dataLoading"
@@ -100,13 +103,13 @@
       align="center"
       width="100">
       <template slot-scope="scope">
-        <span>{{scope.row.output}} * {{scope.row.outputmount}}</span>
+        <span>{{scope.row.output}} * {{scope.row.outputMount}}</span>
       </template>
     </el-table-column>
     <el-table-column
       label="分配工位"
       align="center"
-      prop="distributedStation"
+      prop="station"
       width="100">
     </el-table-column>
     <el-table-column
@@ -124,7 +127,12 @@
       align="center"
       width="100">
       <template slot-scope="scope">
-        <span>{{scope.row.actualTime}}小时</span>
+        <span v-if="scope.row.status===7">
+          {{getActualTime(scope.row.acceptedTime, scope.row.completeTime)}}小时
+        </span>
+        <span v-if="scope.row.status===8">
+          {{getActualTime(scope.row.acceptedTime, scope.row.stoppedTime)}}小时
+        </span>
       </template>
     </el-table-column>
     <el-table-column
@@ -152,12 +160,12 @@
           placement="top"
           width="250"
           trigger="hover">
-          <div v-for="(mitem, index1) in scope.row.material" :key="index1">
+          <div v-for="(mitem, index1) in scope.row.materials" :key="index1">
             <span style="color: #C0C4CC">{{mitem.id}}</span>
             <span> {{mitem.name}}</span>
           </div>
           <div slot="reference">
-              <span v-for="(item, index) in scope.row.material" :key="index"
+              <span v-for="(item, index) in scope.row.materials" :key="index"
               style="white-space: nowrap; text-overflow:ellipsis; overflow:hidden;">
                 {{item.name}} </span>
           </div>
@@ -210,7 +218,7 @@
 <script>
 import billstatus from '../../../config_new/billstatus.js'
 import materialclass from '../../../config_new/materialclass.js'
-import testcompletebill from '../../../config_new/testcompletebill.js'
+// import testcompletebill from '../../../config_new/testcompletebill.js'
 
 export default {
   name: 'Completed',
@@ -218,7 +226,7 @@ export default {
     return {
       billStatus: billstatus,
       materialClass: materialclass,
-      testCompleteBill: testcompletebill,
+      testCompleteBill: [],
       dataLoading: false,
       searchBill: {
         id: '',
@@ -226,11 +234,11 @@ export default {
         outputclass: '',
         outputname: '',
         materialname: '',
-        billstatus: ''
+        billstatus: '已完成'
       },
       pagination: {
-        pageSize: 10,
-        total: 90,
+        pageSize: 15,
+        total: 0,
         currentPage: 1
       },
       multipleSelection: []
@@ -238,23 +246,132 @@ export default {
   },
   methods: {
     handleSearch () {
-      console.log('Searching...')
       console.log(this.searchBill)
       this.reloadData()
     },
     reloadData () {
       console.log('Reload Data......')
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      var id = 0
+      if (this.searchBill.id !== '') {
+        id = this.searchBill.id
+      }
+      var kind = 0
+      if (this.searchBill.outputclass !== '') {
+        kind = this.searchBill.outputclass
+      }
+      var output = 0
+      if (this.searchBill.outputname !== '') {
+        output = this.searchBill.outputname
+      }
+      var material = 0
+      if (this.searchBill.materialname !== '') {
+        material = this.searchBill.materialname
+      }
+      var status = 7
+      if (this.searchBill.billstatus !== '已完成') {
+        status = this.searchBill.billstatus
+      }
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/bill/findwithstatus',
+        params: {
+          id: id,
+          name: this.searchBill.name,
+          kind: kind,
+          status: status,
+          output: output,
+          material: material,
+          stationId: 0,
+          page: this.pagination.currentPage - 1
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.testCompleteBill = response.data.data
+          this.pagination.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查询失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查询错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
     },
     handleDelete (id) {
-      console.log('Delete......')
       console.log(id)
+      this.$confirm('此操作将删除该工单，请谨慎操作, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios({
+          method: 'post',
+          url: this.GLOBAL.backEndIp + '/api/bill/delete',
+          params: {
+            billId: id
+          }
+        }).then(response => {
+          if (response.data.code === 1) {
+            this.$message({
+              message: '删除成功。',
+              type: 'success'
+            })
+            this.reloadData()
+          } else {
+            this.$message({
+              message: '删除失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+              type: 'error'
+            })
+          }
+        }).catch(error => {
+          this.$message({
+            message: '删除错误。' + '错误原因：' + error.response.status,
+            type: 'error'
+          })
+        })
+      }).catch(() => {})
     },
     handleDeleteMul () {
-      console.log('Delete Multi......')
       console.log(this.multipleSelection)
+      this.$confirm('此操作将删除所选工单，请谨慎操作, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        for (var i = 0; i < this.multipleSelection.length; i++) {
+          this.$axios({
+            method: 'post',
+            url: this.GLOBAL.backEndIp + '/api/bill/delete',
+            params: {
+              billId: this.multipleSelection[i].id
+            }
+          }).then(response => {
+            if (response.data.code === 1) {
+              this.$message({
+                message: '删除成功。',
+                type: 'success'
+              })
+              this.reloadData()
+            } else {
+              this.$message({
+                message: '删除失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+                type: 'error'
+              })
+            }
+          }).catch(error => {
+            this.$message({
+              message: '删除错误。' + '错误原因：' + error.response.status,
+              type: 'error'
+            })
+          })
+        }
+      }).catch(() => {})
     },
     handlePagination () {
       console.log('Page to ' + this.pagination.currentPage)
@@ -262,6 +379,31 @@ export default {
     },
     handleSelectionChange (val) {
       this.multipleSelection = val
+    },
+    getActualTime (acceptedTime, completeTime) {
+      var dateStrs = acceptedTime.split('T')[0].split('-')
+      var timeStrs = acceptedTime.split('T')[1].split('.')[0].split(':')
+      var year = parseInt(dateStrs[0], 10)
+      var month = parseInt(dateStrs[1], 10)
+      var day = parseInt(dateStrs[2], 10)
+      var hour = parseInt(timeStrs[0], 10)
+      var minute = parseInt(timeStrs[1], 10)
+      var second = parseInt(timeStrs[2], 10)
+      var accTime = new Date(year, month - 1, day, hour, minute, second)
+
+      dateStrs = completeTime.split('T')[0].split('-')
+      timeStrs = completeTime.split('T')[1].split('.')[0].split(':')
+      year = parseInt(dateStrs[0], 10)
+      month = parseInt(dateStrs[1], 10)
+      day = parseInt(dateStrs[2], 10)
+      hour = parseInt(timeStrs[0], 10)
+      minute = parseInt(timeStrs[1], 10)
+      second = parseInt(timeStrs[2], 10)
+      var comTime = new Date(year, month - 1, day, hour, minute, second)
+
+      var usedTime = comTime - accTime
+      var result = (usedTime / (1000 * 60 * 60)).toFixed(2)
+      return result
     }
   },
   mounted () {

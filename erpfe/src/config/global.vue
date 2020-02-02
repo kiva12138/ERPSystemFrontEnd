@@ -1,5 +1,5 @@
 <script>
-const backEndIp = 'www.baidu.com'
+const backEndIp = 'http://localhost:8080/erp'
 
 export default
 {

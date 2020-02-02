@@ -62,11 +62,13 @@ const navItemsNew = [
       {
         'name': '工位总览',
         'url': 'overview'
-      },
+      }
+      /*,
       {
         'name': '设备总览',
         'url': 'equipment'
       }
+      */
     ]
   },
   {
@@ -77,18 +79,22 @@ const navItemsNew = [
         'name': '工位自管理',
         'url': 'selfmanage'
       },
+      /*
       {
         'name': '设备管理',
         'url': 'equipment'
       },
+      */
       {
         'name': '待接受任务',
         'url': 'unaccepted'
       },
+      /*
       {
         'name': '已接受任务',
         'url': 'accepted'
       },
+      */
       {
         'name': '执行中任务',
         'url': 'producing'

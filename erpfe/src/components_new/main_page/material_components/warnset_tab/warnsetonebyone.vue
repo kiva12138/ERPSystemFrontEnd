@@ -8,7 +8,7 @@
       <el-input placeholder="请输入物料编号"
         class='searchmaterialinput'
         v-model="searchMaterial.id"
-        clearable/>
+        type="number"/>
 
       <span class="searchmaterialtip">物料名称：</span>
       <el-input placeholder="请输入物料名称"
@@ -37,6 +37,7 @@
   <el-table
     class="material_table_class"
     :data="materialData"
+    size="small"
     :default-sort = "{prop: 'id', order: 'descending'}"
     stripe
     v-loading="dataLoading"
@@ -57,7 +58,7 @@
       width="150">
     </el-table-column>
     <el-table-column
-      prop="remain"
+      prop="mount"
       sortable
       label="剩余数量"
       align="center"
@@ -92,7 +93,35 @@
         </i>
       </template>
       <template slot-scope="scope">
-        <el-input-number v-model="scope.row.error" :min="1" :max="99999"/>
+        <el-input-number v-model="scope.row.danger" :min="1" :max="99999"/>
+      </template>
+    </el-table-column>
+    <el-table-column
+      label="当前状态"
+      align="center"
+      width="150">
+      <template slot-scope="scope">
+        <i class="el-icon-warning"
+          style="color: #E6A23C;"
+          v-if="materialStatus[scope.row.status-1].id==='3'">
+          <span icon="el-icon-warning">
+            {{materialStatus[scope.row.status-1].name}}
+          </span>
+        </i>
+        <i class="el-icon-success"
+          style="color: #67C23A;"
+          v-if="materialStatus[scope.row.status-1].id==='1'">
+          <span icon="el-icon-warning">
+            {{materialStatus[scope.row.status-1].name}}
+          </span>
+        </i>
+        <i class="el-icon-error"
+          style="color: #F56C6C;"
+          v-if="materialStatus[scope.row.status-1].id==='2'">
+          <span icon="el-icon-warning">
+            {{materialStatus[scope.row.status-1].name}}
+          </span>
+        </i>
       </template>
     </el-table-column>
     <el-table-column
@@ -101,7 +130,7 @@
       label="操作">
       <template slot-scope="scope">
         <el-button type="text" size="small"
-          @click='handleEdit(scope.row.id, scope.row.warn, scope.row.error)'>修改提交</el-button>
+          @click='handleEdit(scope.row)'>修改提交</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -120,7 +149,7 @@
 </template>
 
 <script>
-import testwarnsetmaterial from '@/config_new/testwarnsetmaterial.js'
+// import testwarnsetmaterial from '@/config_new/testwarnsetmaterial.js'
 import materialstatus from '@/config_new/materialstatus.js'
 
 export default {
@@ -133,31 +162,91 @@ export default {
         status: ''
       },
       currentPage: 1,
-      materialesNumber: 20,
-      materialData: testwarnsetmaterial,
+      materialesNumber: 0,
+      total: 0,
+      pageSize: 15,
+      materialData: [],
       materialStatus: materialstatus,
       dataLoading: false
     }
   },
   methods: {
     handleSearch () {
-      console.log('Searching...')
-      console.log(this.searchMaterial)
-      // reload material data
-      this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      this.searchData()
     },
-    handleEdit (id, warn, error) {
-      // reload material data
-      console.log(id + ' ' + warn + ' ' + error)
+    handleEdit (row) {
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/material/updatethreshold',
+        params: {
+          id: row.id,
+          warn: row.warn,
+          danger: row.danger
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '修改成功。',
+            type: 'success'
+          })
+        } else {
+          this.$message({
+            message: '修改失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '修改错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     },
     handlePagination () {
-      console.log('Page to ' + this.currentPage)
-      // reload material data
+      this.searchData()
+    },
+    searchData () {
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      var id = 0
+      var name = ''
+      var status = 0
+      if (this.searchMaterial.id !== '') {
+        id = this.searchMaterial.id
+      }
+      if (this.searchMaterial.name !== '') {
+        name = this.searchMaterial.name
+      }
+      if (this.searchMaterial.status !== '') {
+        status = this.searchMaterial.status
+      }
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/material/getthreshold',
+        params: {
+          id: id,
+          name: name,
+          status: status,
+          kind: 0,
+          page: this.currentPage - 1,
+          size: this.pageSize
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.materialData = response.data.data
+          this.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查找错误。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查找错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
     }
   },
   computed: {
@@ -166,6 +255,9 @@ export default {
         this.searchMaterial.name === '' &&
         this.searchMaterial.status === ''
     }
+  },
+  mounted () {
+    this.searchData()
   }
 }
 </script>

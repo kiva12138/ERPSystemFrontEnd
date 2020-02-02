@@ -57,15 +57,17 @@
 
     <el-row>
 
-      <span class="searchstoppedbilltip">产出物料名称：</span>
+      <span class="searchstoppedbilltip">产出物料编号：</span>
       <el-input placeholder="请输入产出物料名称"
         class='searchstoppedbillinput'
+        type="number"
         v-model="searchStoppedBill.outputname"
         clearable/>
 
-      <span class="searchstoppedbilltip">所需物料名称：</span>
+      <span class="searchstoppedbilltip">所需物料编号：</span>
       <el-input placeholder="请输入所需物料名称"
         class='searchstoppedbillinput'
+        type="number"
         v-model="searchStoppedBill.materialname"
         clearable/>
 
@@ -92,6 +94,7 @@
 
   <el-table
     class="stoppedbill_table_class"
+    size="small"
     :data="testStoppedBill"
     :default-sort = "{prop: 'id', order: 'descending'}"
     @selection-change="handleSelectionChange"
@@ -122,7 +125,7 @@
       align="center"
       width="100">
       <template slot-scope="scope">
-        <span>{{scope.row.output}}*{{scope.row.outputmount}}</span>
+        <span>{{scope.row.output}}*{{scope.row.outputMount}}</span>
       </template>
     </el-table-column>
     <el-table-column
@@ -130,8 +133,7 @@
       align="center"
       width="100">
       <template slot-scope="scope">
-          <span v-for="(mitem, index1) in scope.row.meta.haveOutput" :key="index1">
-            {{mitem.name}}*{{mitem.mount}} </span>
+        <span>{{scope.row.output}}*{{scope.row.haveoutputMount}}</span>
       </template>
     </el-table-column>
     <el-table-column
@@ -140,7 +142,7 @@
       align="center"
       width="100">
       <template slot-scope="scope">
-        <span>{{scope.row.estimatetime}}小时</span>
+        <span>{{scope.row.estimateTime}}小时</span>
       </template>
     </el-table-column>
     <el-table-column
@@ -149,11 +151,11 @@
       align="center"
       width="120">
       <template slot-scope="scope">
-        <span>{{scope.row.meta.stoppedTime}}小时</span>
+        <span>{{getStoppedTime(scope.row.estimateTime, scope.row.stoppedTime)}}小时</span>
       </template>
     </el-table-column>
     <el-table-column
-      prop="distributedStation"
+      prop="station"
       sortable
       label="分配工位"
       align="center"
@@ -179,12 +181,12 @@
           placement="top"
           width="250"
           trigger="hover">
-          <div v-for="(mitem, index1) in scope.row.material" :key="index1">
+          <div v-for="(mitem, index1) in scope.row.materials" :key="index1">
             <span style="color: #C0C4CC">{{mitem.id}}</span>
             <span> {{mitem.name}}</span>
           </div>
           <div slot="reference">
-              <span v-for="(item, index) in scope.row.material" :key="index"
+              <span v-for="(item, index) in scope.row.materials" :key="index"
               style="white-space: nowrap; text-overflow:ellipsis; overflow:hidden;">
                 {{item.name}} </span>
           </div>
@@ -201,11 +203,11 @@
           width="300"
           trigger="hover">
           <div>
-            {{scope.row.meta.reason}}
+            {{scope.row.stoppedReason}}
           </div>
           <div slot="reference">
             <span style="white-space: nowrap; text-overflow:ellipsis; overflow:hidden;">
-              {{scope.row.meta.reason}}
+              {{scope.row.stoppedReason}}
             </span>
           </div>
         </el-popover>
@@ -261,50 +263,50 @@
       </div>
     </el-row>
     <el-row>
-      <div class='stoppedbilltip'>已停滞时间：</div>
+      <div class='stoppedbilltip'>停滞时间：</div>
       <div class='stoppedbillinput' style="color: #E6A23C;">
-        <span>{{currentBill.meta.stoppedTime}}小时</span>
+        <span>{{getTimeInFormat(currentBill.stoppedTime)}}</span>
       </div>
     </el-row>
     <el-row>
       <div class='stoppedbilltip'>预计完成时间：</div>
       <div class='stoppedbillinput' style="color: #E6A23C;">
-        <span>{{currentBill.estimatetime}}小时</span>
+        <span>{{currentBill.estimateTime}}小时</span>
       </div>
     </el-row>
     <el-row>
       <div class='stoppedbilltip'>停滞原因：</div>
       <div class='stoppedbillinput'>
-        <span>{{currentBill.meta.reason}}</span>
+        <span>{{currentBill.stoppedReason}}</span>
       </div>
     </el-row>
     <el-row>
       <div class='stoppedbilltip'>预计生产：</div>
       <div class='stoppedbillinput'>
-        <span>{{currentBill.output}}*{{currentBill.outputmount}}</span>
+        <span>{{currentBill.output}} * {{currentBill.outputMount}} 件</span>
       </div>
     </el-row>
     <el-row>
       <div class='stoppedbilltip'>停滞前已生产：</div>
       <div class='stoppedbillinput' style="color: #67C23A;">
-        <span v-for="(mitem, index1) in currentBill.meta.haveOutput" :key="index1">
-          {{mitem.name}}*{{mitem.mount}} </span>
+        <span>{{currentBill.output}} * {{currentBill.haveoutputMount}} 件</span>
       </div>
     </el-row>
     <el-row>
       <div class='stoppedbilltip'>停滞前分配物料：</div>
       <div class='stoppedbillinput'>
-        <span v-for="(mitem, index1) in currentBill.material" :key="index1">
+        <span v-for="(mitem, index1) in currentBill.materials" :key="index1">
           {{mitem.name}} </span>
       </div>
     </el-row>
     <el-row>
-      <div class='stoppedbilltip'>停滞前使用物料：</div>
+      <div class='stoppedbilltip'>停滞前已使用物料：</div>
       <div class='stoppedbillinput'>
-        <span v-for="(mitem, index1) in currentBill.meta.haveUsed" :key="index1">
+        <span v-for="(mitem, index1) in currentBill.haveused" :key="index1">
           {{mitem.name}} </span>
       </div>
     </el-row>
+    <!--
     <el-row>
       <div class='stoppedbilltip'>停滞后剩余物料：</div>
       <div class='stoppedbillinput'>
@@ -312,6 +314,7 @@
           {{mitem.name}} </span>
       </div>
     </el-row>
+    -->
     <span slot="footer" class="dialog-footer">
       <el-button type="primary"
         @click="lookupVisible = false">确 定</el-button>
@@ -337,21 +340,33 @@
       </div>
     </el-row>
     <el-row>
-      <div class='stoppedbilldrawertip'>已产出物料：</div>
+      <div class='stoppedbilldrawertip'>欲产出物料：</div>
       <div class='stoppedbilldrawerinput'>
-        <span v-for="(mitem, index1) in redistribute.output" :key="index1">
-          {{mitem.name}}*{{mitem.mount}} </span>
+        <span>{{redistribute.output}}</span>
       </div>
     </el-row>
     <el-row>
-      <div class='stoppedbilldrawertip'>剩余物料：</div>
+      <div class='stoppedbilldrawertip'>已产出物料：</div>
       <div class='stoppedbilldrawerinput'>
-        <span v-for="(mitem, index1) in redistribute.left" :key="index1">
+        <span>{{redistribute.haveoutput}} </span>
+      </div>
+    </el-row>
+    <el-row>
+      <div class='stoppedbilldrawertip'>已分配物料：</div>
+      <div class='stoppedbilldrawerinput'>
+        <span v-for="(mitem, index1) in redistribute.materials" :key="index1">
           {{mitem.name}} </span>
       </div>
     </el-row>
     <el-row>
-      <div class='stoppedbilldrawertip'>新增物料：</div>
+      <div class='stoppedbilldrawertip'>已使用物料：</div>
+      <div class='stoppedbilldrawerinput'>
+        <span v-for="(mitem, index1) in redistribute.usedmaterials" :key="index1">
+          {{mitem.name}} </span>
+      </div>
+    </el-row>
+    <el-row>
+      <div class='stoppedbilldrawertip'>新分配物料：</div>
       <div class='stoppedbilldrawerinputsp'>
         <el-tag
           :key="tag"
@@ -374,13 +389,24 @@
     </el-row>
     <div>
       <div class='stoppedbilldrawertip'>
-        <span style="color: #909399; margin-left: 20px;">
+        <span style="color: #909399; margin-left: 20px; vertical-align: top;">
           提示：
         </span>
       </div>
       <div class='stoppedbilldrawerinput'>
-        <span style="color: #909399; margin-left: 20px;">
+        <span style="color: #909399;">
           若需要多个物料则使用*隔开，如物料A*4
+        </span>
+      </div>
+    </div>
+    <div>
+      <div class='stoppedbilldrawertip'>
+        <span style="color: #909399; margin-left: 20px; vertical-align: top;">
+        </span>
+      </div>
+      <div class='stoppedbilldrawerinput'>
+        <span style="color: #909399; ">
+          重新分配物料不包含上次剩余物料，上次剩余物料会自动回收。
         </span>
       </div>
     </div>
@@ -388,7 +414,7 @@
       <el-row style="text-align: center; margin-top: 40px;">
         <el-button icon="el-icon-edit"
           type="primary" @click='handleRedistributeSubmit'>
-            修 改
+            分配并重启
         </el-button>
       </el-row>
     </div>
@@ -400,7 +426,7 @@
 <script>
 import billstatus from '../../../config_new/billstatus.js'
 import materialclass from '../../../config_new/materialclass.js'
-import teststoppedbill from '../../../config_new/teststoppedbill.js'
+// import teststoppedbill from '../../../config_new/teststoppedbill.js'
 
 export default {
   name: 'Stopped',
@@ -408,14 +434,14 @@ export default {
     return {
       billStatus: billstatus,
       materialClass: materialclass,
-      testStoppedBill: teststoppedbill,
+      testStoppedBill: [],
       lookupVisible: false,
       reDistributingVisible: false,
       dataLoading: false,
       multipleSelection: [],
       stoppedData: {
-        producing: 873,
-        stopped: 211
+        producing: 0,
+        stopped: 0
       },
       searchStoppedBill: {
         id: '',
@@ -426,7 +452,7 @@ export default {
         station: ''
       },
       pagination: {
-        pageSize: 10,
+        pageSize: 15,
         total: 90,
         currentPage: 1
       },
@@ -453,7 +479,9 @@ export default {
         id: '',
         name: '',
         output: '',
-        left: '',
+        haveoutput: '',
+        materials: '',
+        usedmaterials: '',
         add: ''
       },
       editBillInput: {
@@ -464,7 +492,6 @@ export default {
   },
   methods: {
     handleSearch () {
-      console.log('Searching...')
       console.log(this.searchStoppedBill)
       this.reloadData()
     },
@@ -474,23 +501,123 @@ export default {
     reloadData () {
       console.log('Reload Data......')
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      var id = 0
+      if (this.searchStoppedBill.id !== '') {
+        id = this.searchStoppedBill.id
+      }
+      var kind = 0
+      if (this.searchStoppedBill.outputclass !== '') {
+        kind = this.searchStoppedBill.outputclass
+      }
+      var output = 0
+      if (this.searchStoppedBill.outputname !== '') {
+        output = this.searchStoppedBill.outputname
+      }
+      var material = 0
+      if (this.searchStoppedBill.materialname !== '') {
+        material = this.searchStoppedBill.materialname
+      }
+      var station = 0
+      if (this.searchStoppedBill.staion !== '') {
+        station = this.searchStoppedBill.station
+      }
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/bill/findwithstatus',
+        params: {
+          id: id,
+          name: this.searchStoppedBill.name,
+          kind: kind,
+          status: 6,
+          output: output,
+          material: material,
+          stationId: station,
+          page: this.pagination.currentPage - 1
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.testStoppedBill = response.data.data
+          this.pagination.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查询失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查询错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
     },
     handleRestart () {
-      console.log('Restart ')
-      console.log(this.multipleSelection)
+      for (var i = 0; i < this.multipleSelection.length; i++) {
+        this.$axios({
+          method: 'post',
+          url: this.GLOBAL.backEndIp + '/api/bill/restart',
+          params: {
+            id: this.multipleSelection[i].id
+          }
+        }).then(response => {
+          if (response.data.code === 1) {
+            this.$message({
+              message: '重新启动成功。',
+              type: 'success'
+            })
+          } else {
+            this.$message({
+              message: '重新启动失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+              type: 'error'
+            })
+          }
+        }).catch(error => {
+          this.$message({
+            message: '重新启动错误。' + '错误原因：' + error.response.status,
+            type: 'error'
+          })
+        })
+      }
+      this.reloadData()
     },
     handleStop () {
-      console.log('Stop......')
-      console.log(this.multipleSelection)
+      for (var i = 0; i < this.multipleSelection.length; i++) {
+        this.$axios({
+          method: 'post',
+          url: this.GLOBAL.backEndIp + '/api/bill/recycleandstop',
+          params: {
+            id: this.multipleSelection[i].id
+          }
+        }).then(response => {
+          if (response.data.code === 1) {
+            this.$message({
+              message: '回收成功。',
+              type: 'success'
+            })
+          } else {
+            this.$message({
+              message: '回收失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+              type: 'error'
+            })
+          }
+        }).catch(error => {
+          this.$message({
+            message: '回收错误。' + '错误原因：' + error.response.status,
+            type: 'error'
+          })
+        })
+      }
+      this.reloadData()
     },
     handleRedistribute (row) {
       this.redistribute = {
         id: row.id,
         name: row.name,
-        output: row.meta.haveOutput,
-        left: row.meta.left,
+        output: row.output + ' * ' + row.outputMount + '件',
+        haveoutput: row.haveoutputMount + '件',
+        materials: row.materials,
+        usedmaterials: row.haveused,
         add: []
       }
       this.reDistributingVisible = true
@@ -498,14 +625,39 @@ export default {
     handleRedistributeSubmit (row) {
       console.log(this.redistribute)
       this.reDistributingVisible = false
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/bill/redistributeandstart',
+        data: {
+          id: this.redistribute.id,
+          materials: this.redistribute.add
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '分配成功。',
+            type: 'success'
+          })
+        } else {
+          this.$message({
+            message: '分配失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '分配错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.reloadData()
     },
     handleLookUp (row) {
-      console.log('Look Up ' + row.id)
       this.currentBill = Object.assign({}, row)
+      console.log(this.currentBill)
       this.lookupVisible = true
     },
     handlePagination () {
-      console.log('Page to ' + this.pagination.currentPage)
       this.reloadData()
     },
     handleEditBillClose (tag) {
@@ -524,10 +676,66 @@ export default {
       }
       this.editBillInput.inputVisible = false
       this.editBillInput.inputValue = ''
+    },
+    getStoppedTime (estimateTime, acceptedTime) {
+      var dateStrs = acceptedTime.split('T')[0].split('-')
+      var timeStrs = acceptedTime.split('T')[1].split('.')[0].split(':')
+      var year = parseInt(dateStrs[0], 10)
+      var month = parseInt(dateStrs[1], 10)
+      var day = parseInt(dateStrs[2], 10)
+      var hour = parseInt(timeStrs[0], 10)
+      var minute = parseInt(timeStrs[1], 10)
+      var second = parseInt(timeStrs[2], 10)
+      var accTime = new Date(year, month - 1, day, hour, minute, second)
+      accTime.setHours(accTime.getHours() + estimateTime)
+      var now = new Date()
+      var usedTime = now - accTime
+      var result = (usedTime / (1000 * 60 * 60)).toFixed(2)
+      return result
+    },
+    getTimeInFormat (time) {
+      if (time === undefined) {
+        return ''
+      }
+      var dateStrs = time.split('T')[0].split('-')
+      var timeStrs = time.split('T')[1].split('.')[0].split(':')
+      var year = parseInt(dateStrs[0], 10)
+      var month = parseInt(dateStrs[1], 10) + 1
+      var day = parseInt(dateStrs[2], 10)
+      var hour = parseInt(timeStrs[0], 10)
+      var minute = parseInt(timeStrs[1], 10)
+      var second = parseInt(timeStrs[2], 10)
+      return year + '年' + month + '月' + day + '日 ' +
+        hour + '时' + minute + '分' + second + '秒'
     }
   },
   mounted () {
     this.reloadData()
+    this.$axios({
+      method: 'get',
+      url: this.GLOBAL.backEndIp + '/api/bill/alldata'
+    }).then(response => {
+      if (response.data.code === 1) {
+        this.$message({
+          message: '查询成功。',
+          type: 'success'
+        })
+        this.stoppedData = {
+          producing: response.data.producing + response.data.overtime,
+          stopped: response.data.stopped
+        }
+      } else {
+        this.$message({
+          message: '查询失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+          type: 'error'
+        })
+      }
+    }).catch(error => {
+      this.$message({
+        message: '查询错误。' + '错误原因：' + error.response.status,
+        type: 'error'
+      })
+    })
   },
   computed: {
     searchDisabled () {
@@ -575,14 +783,14 @@ export default {
 }
 .stoppedbilltip {
   display: inline-block;
-  width: 29%;
+  width: 33%;
   text-align: right;
   vertical-align: center;
   margin-top: 10px;
 }
 .stoppedbillinput {
   display: inline-block;
-  width: 70%;
+  width: 65%;
   margin-top: 10px;
 }
 .stoppedbillinputsp {

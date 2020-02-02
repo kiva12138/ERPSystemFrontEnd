@@ -34,7 +34,7 @@
         align="center"
         width="100">
         <template slot-scope="scope">
-          <span>{{scope.row.output}} * {{scope.row.outputmount}}</span>
+          <span>{{scope.row.output}} * {{scope.row.outputMount}}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -42,7 +42,7 @@
         align="center"
         width="100">
         <template slot-scope="scope">
-          <span>{{materialClass[scope.row.outputclass - 1].name}}</span>
+          <span>{{materialClass[scope.row.outputKind - 1].name}}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -51,11 +51,11 @@
         align="center"
         width="100">
         <template slot-scope="scope">
-          <span>{{scope.row.estimatetime}}小时</span>
+          <span>{{scope.row.estimateTime}}小时</span>
         </template>
       </el-table-column>
       <el-table-column
-        prop="distributedStation"
+        prop="station"
         sortable
         label="分配工位"
         align="center"
@@ -81,12 +81,12 @@
             placement="top"
             width="250"
             trigger="hover">
-            <div v-for="(mitem, index1) in scope.row.material" :key="index1">
+            <div v-for="(mitem, index1) in scope.row.materials" :key="index1">
               <span style="color: #C0C4CC">{{mitem.id}}</span>
               <span> {{mitem.name}}</span>
             </div>
             <div slot="reference">
-                <span v-for="(item, index) in scope.row.material" :key="index"
+                <span v-for="(item, index) in scope.row.materials" :key="index"
                 style="white-space: nowrap; text-overflow:ellipsis; overflow:hidden;">
                   {{item.name}} </span>
             </div>
@@ -200,7 +200,7 @@
 import selectstation from './select_components/selectstation.vue'
 import billstatus from '../../../config_new/billstatus.js'
 import materialclass from '../../../config_new/materialclass.js'
-import teststationunaccbill from '../../../config_new/teststationunaccepted.js'
+// import teststationunaccbill from '../../../config_new/teststationunaccepted.js'
 
 export default {
   name: 'Unaccepted',
@@ -212,7 +212,7 @@ export default {
       selectStationId: '',
       billStatus: billstatus,
       materialClass: materialclass,
-      testStationUnacceptedBill: teststationunaccbill,
+      testStationUnacceptedBill: [],
       dataLoading: false,
       refuseDialogVisible: false,
       pagination: {
@@ -236,12 +236,63 @@ export default {
     reloadData () {
       console.log('Reload Data......')
       this.dataLoading = true
-      var self = this
-      setTimeout(function () { self.dataLoading = false }, 1000)
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/bill/findwithstatus',
+        params: {
+          id: 0,
+          name: '',
+          kind: 0,
+          status: 2,
+          output: 0,
+          material: 0,
+          stationId: this.selectStationId,
+          page: this.pagination.currentPage - 1
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.testStationUnacceptedBill = response.data.data
+          this.pagination.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查询失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查询错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.dataLoading = false
     },
     handleAccept (id) {
-      console.log('Accept......')
-      console.log(id)
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/bill/accept',
+        params: {
+          billId: id
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '接收成功。',
+            type: 'success'
+          })
+          this.reloadData()
+        } else {
+          this.$message({
+            message: '接收失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '接收错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
     },
     handleRefuse (row) {
       this.currentBill = {
@@ -249,18 +300,43 @@ export default {
         name: row.name,
         status: row.status,
         output: row.output,
-        outputmount: row.outputmount,
-        estimatetime: row.estimatetime,
-        material: row.material
+        outputmount: row.outputMount,
+        estimatetime: row.estimateTime,
+        material: row.materials
       }
       this.refuseDialogVisible = true
     },
-    handleRefuseSubmit (row) {
-      this.refuseDialogVisible = true
-      console.log(this.refuseReason)
+    handleRefuseSubmit () {
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/bill/refuse',
+        params: {
+          billId: this.currentBill.id,
+          reason: this.refuseReason
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.$message({
+            message: '拒绝成功。',
+            type: 'success'
+          })
+          this.refuseDialogVisible = false
+          this.reloadData()
+        } else {
+          this.$message({
+            message: '拒绝失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '拒绝错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.refuseDialogVisible = false
     },
     handlePagination () {
-      console.log('Page to ' + this.pagination.currentPage)
       this.reloadData()
     }
   },
@@ -268,8 +344,7 @@ export default {
     this.reloadData()
     if (this.$cookies.isKey('selectStationId')) {
       this.selectStationId = this.$cookies.get('selectStationId')
-      this.testStationUnacceptedBill = teststationunaccbill
-      this.pagination.total = this.testStationUnacceptedBill.length
+      this.reloadData()
     }
   },
   computed: {
