@@ -181,6 +181,19 @@
       <el-row>
         <div class='stationunacceptedbilltip'>拒收原因：</div>
         <div class='stationunacceptedbillinput'>
+          <el-select v-model="refuseKind" placeholder="请选择拒绝原因">
+            <el-option
+              v-for="item in refuseReasons"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </div>
+      </el-row>
+      <el-row>
+        <div class='stationunacceptedbilltip'>拒收附加信息：</div>
+        <div class='stationunacceptedbillinput'>
           <el-input :clearable="true" v-model="refuseReason"
             placeholder="请输入拒绝原因" class="stationunacceptedbillinput"/>
         </div>
@@ -200,6 +213,7 @@
 import selectstation from './select_components/selectstation.vue'
 import billstatus from '../../../config_new/billstatus.js'
 import materialclass from '../../../config_new/materialclass.js'
+import refusereason from '../../../config_new/refusereason.js'
 // import teststationunaccbill from '../../../config_new/teststationunaccepted.js'
 
 export default {
@@ -211,6 +225,8 @@ export default {
     return {
       selectStationId: '',
       billStatus: billstatus,
+      refuseReasons: refusereason,
+      refuseKind: '',
       materialClass: materialclass,
       testStationUnacceptedBill: [],
       dataLoading: false,
@@ -228,6 +244,7 @@ export default {
         output: '',
         outputmount: 3,
         estimatetime: 72,
+        refuseReason: 1,
         material: []
       }
     }
@@ -312,7 +329,8 @@ export default {
         url: this.GLOBAL.backEndIp + '/api/bill/refuse',
         params: {
           billId: this.currentBill.id,
-          reason: this.refuseReason
+          reason: this.refuseReason,
+          kind: this.refuseKind
         }
       }).then(response => {
         if (response.data.code === 1) {
@@ -349,7 +367,7 @@ export default {
   },
   computed: {
     searchRefuseDisabled () {
-      return this.refuseReason === ''
+      return this.refuseReason === '' || this.refuseKind === ''
     }
   }
 }

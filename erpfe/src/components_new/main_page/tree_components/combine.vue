@@ -1,6 +1,26 @@
 <template>
 <div>
 
+  <div style="width: 50%; text-align: center; display: inline-block;margin-bottom: 10px;">
+    <div>
+      <span style="font-size: 80%; color: #606266;">总计</span>
+      <span style="font-size: 250%; color: #409EFF;">
+        {{pagination.total}}
+      </span>
+      <span style="font-size: 80%; color: #606266;">种合成物料</span>
+    </div>
+  </div>
+  <div style="width: 30%; text-align: center; display: inline-block;margin-bottom: 10px;">
+    <div>
+      <span style="font-size: 80%; color: #606266;">其中</span>
+      <span style="font-size: 250%; color: #E6A23C;">
+        {{pagination.warningNumber}}
+      </span>
+      <span style="font-size: 80%; color: #606266;">种物料的剩余数量</span>
+      <span style="font-size: 80%; color: #E6A23C;">处于预警状态</span>
+    </div>
+  </div>
+
   <div class="search_material_part">
     <el-row>
 
@@ -26,30 +46,12 @@
           :value="item.id" />
       </el-select>
 
-      <span class="searchmaterialtip">物料种类：</span>
-      <el-select v-model="searchMaterial.class" placeholder="请选择种类"
-        class='searchmaterialinput'>
-        <el-option
-          v-for="item in materialClass"
-          :key="item.id"
-          :label="item.name"
-          :value="item.id" />
-      </el-select>
-
       <el-button icon="el-icon-search"
         :disabled='searchDisabled'
         style="margin-left: 40px;"
-        type="primary" @click='handleSearch'>筛选物料</el-button>
+        type="primary" @click='handleSearch'>筛选生产原料</el-button>
 
     </el-row>
-  </div>
-
-  <div class="new_material_class">
-    <el-button icon="el-icon-edit"
-      size="small"
-      type="primary" @click='handleNewMaterial'>
-        增加新的物料种类
-    </el-button>
   </div>
 
   <el-table
@@ -80,30 +82,21 @@
       sortable
       label="总数量"
       align="center"
-      width="100">
+      width="150">
     </el-table-column>
     <el-table-column
       prop="remain"
       sortable
       label="剩余数量"
       align="center"
-      width="100">
+      width="150">
     </el-table-column>
     <el-table-column
       prop="distributed"
       sortable
       label="已分配数量"
       align="center"
-      width="120">
-    </el-table-column>
-    <el-table-column
-      sortable
-      label="物料类别"
-      align="center"
-      width="100">
-      <template slot-scope="scope">
-        <span>{{materialClass[scope.row.mclass-1].name}}</span>
-      </template>
+      width="150">
     </el-table-column>
     <el-table-column
       prop="status"
@@ -143,12 +136,15 @@
     <el-table-column
       fixed="right"
       label="操作"
-      width="150">
+      align="center"
+      width="250">
       <template slot-scope="scope">
         <el-button type="text" size="small"
           @click='handleEdit(scope.row)'>编辑</el-button>
         <el-button type="text" size="small"
-          @click='handleDelete(scope.row.id)'>删除</el-button>
+          @click='handlePreTransport(scope.row)'>数量调整</el-button>
+        <el-button type="text" size="small"
+          @click='handleCheckTree(scope.row)'>查看生产树</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -162,49 +158,6 @@
     @current-change="handlePagination"
     :total="pagination.total">
   </el-pagination>
-
-  <el-dialog
-    class="new_material_dialog_class"
-    :modal="false"
-    title="新建物料"
-    :visible.sync="newMaterialDialogVisible"
-    width="30%">
-      <el-row>
-        <div class='materialtip'>物料名称：</div>
-        <div class='materialinput'>
-          <el-input placeholder="请输入物料名称"
-                  v-model="newMaterial.name"
-                  clearable/>
-        </div>
-      </el-row>
-      <el-row>
-        <div class='materialtip'>物料种类：</div>
-        <div class='materialinput'>
-          <el-select v-model="newMaterial.class" placeholder="请选择种类">
-            <el-option
-              v-for="item in materialClass"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id" />
-          </el-select>
-        </div>
-      </el-row>
-      <el-row>
-        <div class='materialtip'>物料描述：</div>
-        <div class='materialinput'>
-          <el-input placeholder="请输入物料描述(可选)"
-                  v-model="newMaterial.description"
-                  type="textarea"
-                  clearable/>
-        </div>
-      </el-row>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="newMaterialDialogVisible = false">取 消</el-button>
-        <el-button type="primary"
-          @click="handleNewMaterialSubmit"
-          :disabled="newMaterialSubmitDisabled">新 建</el-button>
-      </span>
-  </el-dialog>
 
   <el-dialog
     class="modify_material_dialog_class"
@@ -254,6 +207,104 @@
       </span>
   </el-dialog>
 
+  <el-dialog
+    class="modify_material_dialog_class"
+    :modal="false"
+    title="修改剩余数量"
+    :visible.sync="transportDialogVisible"
+    width="30%">
+     <el-row>
+        <div class='materialtip'>物料编号：</div>
+        <div class='materialinput'>
+          {{currentTransport.id}}
+        </div>
+      </el-row>
+      <el-row>
+        <div class='materialtip'>物料名称：</div>
+        <div class='materialinput'>
+          {{currentTransport.name}}
+        </div>
+      </el-row>
+      <el-row>
+        <div class='materialtip'>物料种类：</div>
+        <div class='materialinput'>
+          {{materialClass[currentTransport.class - 1].name}}
+        </div>
+      </el-row>
+      <el-row>
+        <div class='materialtip'>剩余数量：</div>
+        <div class='materialinput'>
+          {{currentTransport.left}}
+        </div>
+      </el-row>
+      <el-row>
+        <div class='materialtip'>配送操作：</div>
+        <div class='materialinput'>
+          <el-select v-model="currentTransport.operation" placeholder="请选择种类">
+            <el-option
+              v-for="item in operation"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id" />
+          </el-select>
+        </div>
+      </el-row>
+      <el-row>
+        <div class='materialtip'>配送数量：</div>
+        <div class='materialinput'>
+          <el-input placeholder="请输入配送数量"
+                  v-model="currentTransport.operationmount"
+                  type="number"/>
+        </div>
+      </el-row>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="transportDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="handleTransport"
+          :disabled="newModifySubmitDisabled">修 改</el-button>
+      </span>
+  </el-dialog>
+
+  <el-dialog
+    class="modify_material_dialog_class"
+    :modal="false"
+    :title="currentMaterial.name + '的生产树'"
+    :visible.sync="treeDialogVisible"
+    width="30%">
+    <div v-for="(item, index) in currentTree"
+      v-bind:key="index" style="width: 100%; text-align: center;">
+      <span style="width: 50%; margin: 10px;">生产树{{index + 1}}: {{item.name}}</span>
+      <el-button size="small" type="primary" @click="handleCheckSingleTree(item)">点击查看</el-button>
+    </div>
+    <span slot="footer" class="dialog-footer">
+      <el-button @click="treeDialogVisible = false">确 定</el-button>
+    </span>
+  </el-dialog>
+
+  <el-dialog
+    class="modify_material_dialog_class"
+    :modal="false"
+    :title="currentMaterial.name + '的生产树'"
+    :visible.sync="singleTreeDialogVisible"
+    width="40%">
+    <hr style="width: 0px; height: 70px; border: 1px solid #606266; position: absolute; top: 100px; left: 0; right: 0;"/>
+    <hr style="width: 50%; border: 1px solid #606266;
+    position: absolute; top: 170px; left: 0; right: 0;"/>
+    <div style="position: relative; top: 0px; text-align: center;">
+      <el-row>
+        <el-button plain :style="{'background-color': getColor(), 'color': 'white'}">{{singleTree.name}}</el-button>
+      </el-row>
+      <el-row style="overflow:auto; width: 100%; margin-top: 30px;">
+        <span v-for="(needitem, index1) in singleTree.need"
+          :key = "index1" :style="'display: inline-block; width: ' + 100 / singleTree.need.length + '%;'">
+          <el-button plain :style="{'background-color': getColor(), 'color': 'white'}">{{needitem.name}}*{{needitem.mount}}</el-button>
+        </span>
+      </el-row>
+    </div>
+    <span slot="footer" class="dialog-footer">
+      <el-button @click="singleTreeDialogVisible = false">确 定</el-button>
+    </span>
+  </el-dialog>
+
 </div>
 </template>
 
@@ -263,92 +314,127 @@ import materialclass from '@/config_new/materialclass.js'
 import materialstatus from '@/config_new/materialstatus.js'
 
 export default {
-  name: 'Overall',
+  name: 'Combine',
   data () {
     return {
       searchMaterial: {
         id: '',
         name: '',
-        class: '',
         status: ''
       },
       pagination: {
         pageSize: 15,
         currentPage: 1,
-        total: 0
+        total: 0,
+        warningNumber: 3
       },
       materialData: [],
       materialClass: materialclass,
       materialStatus: materialstatus,
-      newMaterialDialogVisible: false,
       modifyMaterialDialogVisible: false,
+      transportDialogVisible: false,
+      treeDialogVisible: false,
+      singleTreeDialogVisible: false,
       dataLoading: false,
-      newMaterial: {
-        name: '',
-        class: '',
-        description: ''
-      },
       currentMaterial: {
         id: '',
         name: '',
         class: 0,
         description: ''
+      },
+      currentTransport: {
+        id: '',
+        name: '',
+        class: 1,
+        left: '',
+        operation: '',
+        operationmount: ''
+      },
+      operation: [
+        {
+          id: 'in',
+          name: '入库配送'
+        },
+        {
+          id: 'out',
+          name: '出库配送'
+        }
+      ],
+      currentTree: [],
+      singleTree: {
+        id: 3,
+        name: '',
+        opname: '',
+        status: 1,
+        description: '',
+        need: []
       }
     }
   },
   methods: {
+    handleCheckSingleTree (item) {
+      this.singleTree = item
+      this.singleTreeDialogVisible = true
+      console.log(this.singleTree)
+    },
+    getColor () {
+      var color = ''
+      if (this.singleTree.status === 1) {
+        color = '#67C23A'
+      }
+      if (this.singleTree.status === 2) {
+        color = '#E6A23C'
+      }
+      if (this.singleTree.status === 3) {
+        color = '#F56C6C'
+      }
+      return color
+    },
+    handleCheckTree (row) {
+      this.currentMaterial = {
+        id: row.id,
+        name: row.name,
+        class: row.mclass,
+        description: row.description
+      }
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/tree/getbymid',
+        params: {
+          mid: row.id
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.currentTree = response.data.data
+          this.treeDialogVisible = true
+        } else {
+          this.$message({
+            message: '查询失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查询错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+    },
     handleSearch () {
       console.log(this.searchMaterial)
       this.dataLoading = true
       this.searchData()
       this.dataLoading = false
     },
-    handleNewMaterial () {
-      this.newMaterialDialogVisible = true
-      this.newMaterial = {
-        name: '',
-        class: '',
-        description: ''
-      }
-    },
-    handleNewMaterialSubmit () {
-      this.$axios({
-        method: 'post',
-        url: this.GLOBAL.backEndIp + '/api/material/addcategory',
-        params: {
-          name: this.newMaterial.name,
-          kind: this.newMaterial.class,
-          description: this.newMaterial.description
-        }
-      }).then(response => {
-        if (response.data.code === 1) {
-          this.$message({
-            message: '新增成功。',
-            type: 'success'
-          })
-        } else {
-          this.$message({
-            message: '新增失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
-            type: 'error'
-          })
-        }
-      }).catch(error => {
-        this.$message({
-          message: '新增错误。' + '错误原因：' + error.response.status,
-          type: 'error'
-        })
-      })
-      this.newMaterialDialogVisible = false
-      this.dataLoading = true
-      this.searchData()
-      this.dataLoading = false
-    },
     handleEdit (row) {
       this.modifyMaterialDialogVisible = true
-      this.currentMaterial.id = row.id
-      this.currentMaterial.name = row.name
-      this.currentMaterial.class = row.mclass
-      this.currentMaterial.description = row.description
+      console.log(row)
+      this.currentMaterial = {
+        id: row.id,
+        name: row.name,
+        class: row.mclass,
+        description: row.description
+      }
     },
     handleModifySubmit () {
       this.$axios({
@@ -383,37 +469,50 @@ export default {
       this.searchData()
       this.dataLoading = false
     },
-    handleDelete (id) {
-      this.$confirm('此操作将永久删除该物料种类, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.$axios({
-          method: 'post',
-          url: this.GLOBAL.backEndIp + '/api/material/deletecategory',
-          params: {
-            id: id
-          }
-        }).then(response => {
-          if (response.data.code === 1) {
-            this.$message({
-              message: '删除成功。',
-              type: 'success'
-            })
-          } else {
-            this.$message({
-              message: '删除失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
-              type: 'error'
-            })
-          }
-        }).catch(error => {
+    handlePreTransport (row) {
+      this.currentTransport = {
+        id: row.id,
+        name: row.name,
+        class: row.mclass,
+        left: row.remain,
+        operation: '',
+        operationmount: ''
+      }
+      this.transportDialogVisible = true
+    },
+    handleTransport () {
+      var operation = 1
+      if (this.currentTransport.operation === 'out') {
+        operation = -1
+      }
+      this.$axios({
+        method: 'post',
+        url: this.GLOBAL.backEndIp + '/api/transport/add',
+        params: {
+          mid: this.currentTransport.id,
+          mount: this.currentTransport.operationmount,
+          way: operation,
+          description: ''
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
           this.$message({
-            message: '删除错误。' + '错误原因：' + error.response.status,
+            message: '新增成功。',
+            type: 'success'
+          })
+        } else {
+          this.$message({
+            message: '新增失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
             type: 'error'
           })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '新增错误。' + '错误原因：' + error.response.status,
+          type: 'error'
         })
-      }).catch(() => {})
+      })
+      this.transportDialogVisible = false
       this.dataLoading = true
       this.searchData()
       this.dataLoading = false
@@ -427,27 +526,23 @@ export default {
       var id = 0
       var name = ''
       var status = 0
-      var kind = 0
       if (this.searchMaterial.id !== '') {
         id = this.searchMaterial.id
       }
       if (this.searchMaterial.name !== '') {
         name = this.searchMaterial.name
       }
-      if (this.searchMaterial.class !== '') {
-        kind = this.searchMaterial.class
-      }
       if (this.searchMaterial.status !== '') {
         status = this.searchMaterial.status
       }
       this.$axios({
         method: 'get',
-        url: this.GLOBAL.backEndIp + '/api/material/getcategory',
+        url: this.GLOBAL.backEndIp + '/api/material/getcategoryexceptkind',
         params: {
           id: id,
           name: name,
           status: status,
-          kind: kind,
+          kind: 1,
           page: this.pagination.currentPage - 1,
           size: this.pagination.pageSize
         }
@@ -455,6 +550,30 @@ export default {
         if (response.data.code === 1) {
           this.materialData = response.data.materials
           this.pagination.total = response.data.allLength
+        } else {
+          this.$message({
+            message: '查找错误。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            type: 'error'
+          })
+        }
+      }).catch(error => {
+        this.$message({
+          message: '查找错误。' + '错误原因：' + error.response.status,
+          type: 'error'
+        })
+      })
+      this.$axios({
+        method: 'get',
+        url: this.GLOBAL.backEndIp + '/api/material/getcategorymountexceptstatusandkind',
+        params: {
+          id: id,
+          name: name,
+          status: 1,
+          kind: 1
+        }
+      }).then(response => {
+        if (response.data.code === 1) {
+          this.pagination.warningNumber = response.data.mount
         } else {
           this.$message({
             message: '查找错误。' + '错误原因：' + response.data.code + '-' + response.data.message,
@@ -476,14 +595,14 @@ export default {
         this.searchMaterial.class === '' &&
         this.searchMaterial.status === ''
     },
-    newMaterialSubmitDisabled () {
-      return this.newMaterial.name === '' ||
-        this.newMaterial.class === ''
-    },
     editMaterialSubmitDisabled () {
       return this.currentMaterial.name === '' ||
         this.currentMaterial.class === 0 ||
         this.currentMaterial.class === ''
+    },
+    newModifySubmitDisabled () {
+      return this.currentTransport.operation === '' ||
+        this.currentTransport.operationmount === ''
     }
   },
   mounted () {
@@ -513,10 +632,6 @@ export default {
   width: 12%;
   display: inline-block;
   white-space:nowrap;
-}
-.new_material_class {
-  padding: 20px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 .pagination_class {
   margin: 40px;

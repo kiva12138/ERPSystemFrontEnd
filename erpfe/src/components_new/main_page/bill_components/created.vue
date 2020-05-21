@@ -55,6 +55,7 @@
 
   <div class="new_bill_class">
     <el-button icon="el-icon-edit"
+      size="small"
       type="primary" @click='handleNewBill'>
         创建新的工单
     </el-button>
@@ -65,6 +66,7 @@
     :data="testCreatedBill"
     :default-sort = "{prop: 'id', order: 'descending'}"
     stripe
+    size="small"
     v-loading="dataLoading"
     style="width: 100%;">
     <el-table-column
@@ -180,90 +182,6 @@
     :total="pagination.total">
   </el-pagination>
 
-  <el-drawer
-    title="新建工单"
-    :visible.sync="newBillVisible"
-    direction="rtl"
-    custom-class="newbill-drawer"
-    ref="drawer"
-    >
-    <div class="newbill-drawer__content">
-      <el-row>
-        <div class='billtip'>工单名称：</div>
-        <div class='billinput'>
-          <el-input placeholder="请输入工单名称" v-model="newBill.name" clearable/>
-        </div>
-      </el-row>
-      <el-row>
-        <div class='billtip'>产出物料：</div>
-        <div class='billinput'>
-          <el-input placeholder="请输入产出物料ID" v-model="newBill.outputid" type="number" clearable/>
-        </div>
-      </el-row>
-      <el-row>
-        <div class='billtip'>产出数量：</div>
-        <div class='billinput'>
-          <el-input-number v-model="newBill.outputmount" :min="1" :max="99999"/>
-        </div>
-      </el-row>
-      <el-row>
-        <div class='billtip'>预计时间(时)：</div>
-        <div class='billinput'>
-          <el-input-number v-model="newBill.estimatetime" :min="1" :max="99999"/>
-        </div>
-      </el-row>
-      <el-row>
-        <div class='billtip'>所需物料：</div>
-        <div class='billinput'>
-          <el-tag
-            :key="tag"
-            v-for="tag in newBill.material"
-            closable
-            :disable-transitions="false"
-            @close="handleNewBillClose(tag)">
-            {{tag}}
-          </el-tag>
-          <el-input
-            class="input-new-tag"
-            v-if="newBillInput.inputVisible"
-            v-model="newBillInput.inputValue"
-            ref="saveTagInput"
-            size="small"
-            @keyup.enter.native="handleNewBillInputConfirm"
-            @blur="handleNewBillInputConfirm"/>
-          <el-button v-else class="button-new-tag" size="small" @click="showNewBillInput">+ 新物料</el-button>
-        </div>
-      </el-row>
-      <el-row>
-        <div class='billtip'>
-          <span style="color: #909399; margin-left: 20px;">
-            提示：
-          </span>
-        </div>
-        <div class='billinput'>
-          <span style="color: #909399; margin-left: 20px;">
-            若需要多个物料则使用*隔开，如物料A*4
-          </span>
-        </div>
-      </el-row>
-      <el-row>
-        <div class='billtip'>描述：</div>
-        <div class='billinput'>
-          <el-input v-model="newBill.description" type="textarea" placeholder="请输入工单名称" clearable/>
-        </div>
-      </el-row>
-      <div class="newbill-drawer__footer">
-        <el-row style="text-align: center; margin-top: 40px;">
-          <el-button icon="el-icon-edit"
-            :disabled="newDisabled"
-            type="primary" @click='handleNewBillSubmit'>
-              创 建
-          </el-button>
-        </el-row>
-      </div>
-    </div>
-  </el-drawer>
-
   <el-dialog
     :modal="false"
     title="分配工单"
@@ -300,6 +218,110 @@
   </el-dialog>
 
   <el-drawer
+    title="新建工单"
+    :visible.sync="newBillVisible"
+    direction="rtl"
+    custom-class="newbill-drawer"
+    ref="drawer"
+    >
+    <div class="newbill-drawer__content">
+      <el-row>
+        <div class='billtip'>工单名称：</div>
+        <div class='billinput'>
+          <el-input placeholder="请输入工单名称" v-model="newBill.name" clearable/>
+        </div>
+      </el-row>
+      <el-row>
+        <div class='billtip'>产出物料：</div>
+        <div class='billinput'>
+          <el-input placeholder="请输入产出物料ID" v-model="newBill.outputid" type="number" clearable/>
+        </div>
+      </el-row>
+      <el-row>
+        <div class='billtip'>产出数量：</div>
+        <div class='billinput'>
+          <el-input-number v-model="newBill.outputmount" :min="1" :max="99999"/>
+        </div>
+      </el-row>
+      <el-row>
+        <div class='billtip'>预计时间(时)：</div>
+        <div class='billinput'>
+          <el-input-number v-model="newBill.estimatetime" :min="1" :max="99999"/>
+        </div>
+      </el-row>
+      <el-row>
+        <div class='billtip'>使用生产树：</div>
+        <div class='billinput'>
+          <el-switch
+            v-model="useTree"
+            active-color="#13ce66"
+            inactive-color="#ff4949"/>
+          <span style="color: #909399; font-size: 80%;">   *系统推荐使用生产树</span>
+        </div>
+      </el-row>
+      <span v-if="!useTree">
+        <el-row>
+          <div class='billtip'>所需物料：</div>
+          <div class='billinput'>
+            <el-tag
+              :key="tag"
+              v-for="tag in newBill.material"
+              closable
+              :disable-transitions="false"
+              @close="handleNewBillClose(tag)">
+              {{tag}}
+            </el-tag>
+            <el-input
+              class="input-new-tag"
+              v-if="newBillInput.inputVisible"
+              v-model="newBillInput.inputValue"
+              ref="saveTagInput"
+              size="small"
+              @keyup.enter.native="handleNewBillInputConfirm"
+              @blur="handleNewBillInputConfirm"/>
+            <el-button v-else class="button-new-tag" size="small" @click="showNewBillInput">+ 新物料</el-button>
+          </div>
+        </el-row>
+        <el-row>
+          <div class='billtip'>
+            <span style="color: #909399; margin-left: 20px;">
+              提示：
+            </span>
+          </div>
+          <div class='billinput'>
+            <span style="color: #909399; margin-left: 20px;">
+              若需要多个物料则使用*隔开，如物料A*4
+            </span>
+          </div>
+        </el-row>
+      </span>
+      <span v-if="useTree">
+        <el-row>
+          <div class='billtip'>生产树编号：</div>
+          <div class='billinput'>
+            <el-input v-model="newBill.treeid" type="number" placeholder="请输入生产树ID"/>
+          </div>
+        </el-row>
+      </span>
+      <el-row>
+        <div class='billtip'>描述：</div>
+        <div class='billinput'>
+          <el-input v-model="newBill.description" type="textarea" placeholder="请输入工单名称" clearable/>
+        </div>
+      </el-row>
+      <div class="newbill-drawer__footer">
+        <el-row style="text-align: center; margin-top: 40px;">
+          <el-button icon="el-icon-edit"
+            :disabled="newDisabled"
+            type="primary" @click='handleNewBillSubmit'>
+              创 建
+          </el-button>
+        </el-row>
+      </div>
+    </div>
+  </el-drawer>
+
+  <el-drawer
     title="修改工单"
     :visible.sync="editBillVisible"
     direction="rtl"
@@ -332,39 +354,65 @@
       </div>
     </el-row>
     <el-row>
-      <div class='billtip'>所需物料：</div>
-      <div class='billinputsp'>
-        <el-tag
-          :key="tag"
-          v-for="tag in editBill.material"
-          closable
-          :disable-transitions="false"
-          @close="handleEditBillClose(tag)">
-          {{tag}}
-        </el-tag>
-        <el-input
-          class="input-new-tag"
-          v-if="editBillInput.inputVisible"
-          v-model="editBillInput.inputValue"
-          ref="saveTagInput"
-          size="small"
-          @keyup.enter.native="handleEditBillInputConfirm"
-          @blur="handleEditBillInputConfirm"/>
-        <el-button v-else class="button-new-tag" size="small" @click="showEditBillInput">+ 新物料</el-button>
+      <div class='billtip'>使用生产树：</div>
+      <div class='billinput'>
+        <el-switch
+          v-model="useTree"
+          active-color="#13ce66"
+          inactive-color="#ff4949"/>
+        <span style="color: #909399; font-size: 80%;">   *系统推荐使用生产树</span>
       </div>
     </el-row>
-    <div>
-      <div class='billtip'>
-        <span style="color: #909399; margin-left: 20px;">
-          提示：
-        </span>
-      </div>
+    <span v-if="!useTree">
+      <el-row>
+        <div class='billtip'>所需物料：</div>
+        <div class='billinputsp'>
+          <el-tag
+            :key="tag"
+            v-for="tag in editBill.material"
+            closable
+            :disable-transitions="false"
+            @close="handleEditBillClose(tag)">
+            {{tag}}
+          </el-tag>
+          <el-input
+            class="input-new-tag"
+            v-if="editBillInput.inputVisible"
+            v-model="editBillInput.inputValue"
+            ref="saveTagInput"
+            size="small"
+            @keyup.enter.native="handleEditBillInputConfirm"
+            @blur="handleEditBillInputConfirm"/>
+          <el-button v-else class="button-new-tag" size="small" @click="showEditBillInput">+ 新物料</el-button>
+        </div>
+        <div>
+          <div class='billtip'>
+            <span style="color: #909399; margin-left: 20px;">
+              提示：
+            </span>
+          </div>
+          <div class='billinput'>
+            <span style="color: #909399; margin-left: 20px;">
+              若需要多个物料则使用*隔开，如物料A*4
+            </span>
+          </div>
+        </div>
+      </el-row>
+    </span>
+    <span v-if="useTree">
+        <el-row>
+          <div class='billtip'>生产树编号：</div>
+          <div class='billinput'>
+            <el-input v-model="editBill.treeid" type="number" placeholder="请输入生产树ID"/>
+          </div>
+        </el-row>
+    </span>
+    <el-row>
+      <div class='billtip'>描述：</div>
       <div class='billinput'>
-        <span style="color: #909399; margin-left: 20px;">
-          若需要多个物料则使用*隔开，如物料A*4
-        </span>
+        <el-input v-model="editBill.description" type="textarea" placeholder="请输入工单描述" clearable/>
       </div>
-    </div>
+    </el-row>
     <div>
       <el-row style="text-align: center; margin-top: 40px;">
         <el-button icon="el-icon-edit"
@@ -394,6 +442,7 @@ export default {
       editBillVisible: false,
       distributeBillVisible: false,
       dataLoading: false,
+      useTree: true,
       searchBill: {
         id: '',
         name: '',
@@ -412,7 +461,8 @@ export default {
         outputmount: 1,
         estimatetime: 12,
         material: [],
-        description: ''
+        description: '',
+        treeid: ''
       },
       newBillInput: {
         inputVisible: false,
@@ -425,7 +475,8 @@ export default {
         outputmount: 1,
         estimatetime: 12,
         material: [],
-        description: ''
+        description: '',
+        treeid: ''
       },
       editBillInput: {
         inputVisible: false,
@@ -455,36 +506,69 @@ export default {
       }
     },
     handleNewBillSubmit () {
-      this.$axios({
-        method: 'post',
-        url: this.GLOBAL.backEndIp + '/api/bill/createnew',
-        data: {
-          name: this.newBill.name,
-          output: this.newBill.outputid,
-          outputMount: this.newBill.outputmount,
-          estimateTime: this.newBill.estimatetime,
-          materials: this.newBill.material,
-          description: this.newBill.description
-        }
-      }).then(response => {
-        if (response.data.code === 1) {
+      if (this.useTree) {
+        this.$axios({
+          method: 'post',
+          url: this.GLOBAL.backEndIp + '/api/bill/createnewwithtree',
+          data: {
+            name: this.newBill.name,
+            output: this.newBill.outputid,
+            outputMount: this.newBill.outputmount,
+            estimateTime: this.newBill.estimatetime,
+            treeId: this.newBill.treeid,
+            description: this.newBill.description
+          }
+        }).then(response => {
+          if (response.data.code === 1) {
+            this.$message({
+              message: '增加成功。',
+              type: 'success'
+            })
+            this.reloadData()
+          } else {
+            this.$message({
+              message: '增加失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+              type: 'error'
+            })
+          }
+        }).catch(error => {
           this.$message({
-            message: '增加成功。',
-            type: 'success'
-          })
-          this.reloadData()
-        } else {
-          this.$message({
-            message: '增加失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            message: '增加错误。' + '错误原因：' + error.response.status,
             type: 'error'
           })
-        }
-      }).catch(error => {
-        this.$message({
-          message: '增加错误。' + '错误原因：' + error.response.status,
-          type: 'error'
         })
-      })
+      } else {
+        this.$axios({
+          method: 'post',
+          url: this.GLOBAL.backEndIp + '/api/bill/createnew',
+          data: {
+            name: this.newBill.name,
+            output: this.newBill.outputid,
+            outputMount: this.newBill.outputmount,
+            estimateTime: this.newBill.estimatetime,
+            materials: this.newBill.material,
+            description: this.newBill.description
+          }
+        }).then(response => {
+          if (response.data.code === 1) {
+            this.$message({
+              message: '增加成功。',
+              type: 'success'
+            })
+            this.reloadData()
+          } else {
+            this.$message({
+              message: '增加失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+              type: 'error'
+            })
+          }
+        }).catch(error => {
+          this.$message({
+            message: '增加错误。' + '错误原因：' + error.response.status,
+            type: 'error'
+          })
+        })
+      }
     },
     handleDistributed (row) {
       console.log('Distributing...')
@@ -625,37 +709,71 @@ export default {
       this.editBillVisible = true
     },
     handleEditBillSubmit () {
-      this.$axios({
-        method: 'post',
-        url: this.GLOBAL.backEndIp + '/api/bill/edit',
-        data: {
-          id: this.editBill.id,
-          name: this.editBill.name,
-          output: this.editBill.outputname,
-          outputMount: this.editBill.outputmount,
-          estimateTime: this.editBill.estimatetime,
-          materials: this.editBill.material,
-          description: this.editBill.description
-        }
-      }).then(response => {
-        if (response.data.code === 1) {
+      if (this.useTree) {
+        this.$axios({
+          method: 'post',
+          url: this.GLOBAL.backEndIp + '/api/bill/editwithtree',
+          data: {
+            id: this.editBill.id,
+            name: this.editBill.name,
+            output: this.editBill.outputname,
+            outputMount: this.editBill.outputmount,
+            estimateTime: this.editBill.estimatetime,
+            treeId: this.editBill.treeid,
+            description: this.editBill.description
+          }
+        }).then(response => {
+          if (response.data.code === 1) {
+            this.$message({
+              message: '修改成功。',
+              type: 'success'
+            })
+            this.reloadData()
+          } else {
+            this.$message({
+              message: '修改失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+              type: 'error'
+            })
+          }
+        }).catch(error => {
           this.$message({
-            message: '修改成功。',
-            type: 'success'
-          })
-          this.reloadData()
-        } else {
-          this.$message({
-            message: '修改失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+            message: '修改错误。' + '错误原因：' + error.response.status,
             type: 'error'
           })
-        }
-      }).catch(error => {
-        this.$message({
-          message: '修改错误。' + '错误原因：' + error.response.status,
-          type: 'error'
         })
-      })
+      } else {
+        this.$axios({
+          method: 'post',
+          url: this.GLOBAL.backEndIp + '/api/bill/edit',
+          data: {
+            id: this.editBill.id,
+            name: this.editBill.name,
+            output: this.editBill.outputname,
+            outputMount: this.editBill.outputmount,
+            estimateTime: this.editBill.estimatetime,
+            materials: this.editBill.material,
+            description: this.editBill.description
+          }
+        }).then(response => {
+          if (response.data.code === 1) {
+            this.$message({
+              message: '修改成功。',
+              type: 'success'
+            })
+            this.reloadData()
+          } else {
+            this.$message({
+              message: '修改失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
+              type: 'error'
+            })
+          }
+        }).catch(error => {
+          this.$message({
+            message: '修改错误。' + '错误原因：' + error.response.status,
+            type: 'error'
+          })
+        })
+      }
       this.editBillVisible = false
     },
     handlePagination () {
@@ -710,7 +828,8 @@ export default {
     newDisabled () {
       return this.newBill.name === '' ||
         this.newBill.outputid === '' ||
-        this.newBill.material.length === 0
+        (this.newBill.material.length === 0 &&
+          this.newBill.treeid === '')
     },
     distributeDisabled () {
       return this.distributingBill.stationId === ''

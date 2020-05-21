@@ -1,8 +1,8 @@
 <template>
 <div>
-  <span class='material_current_hint'>
+  <div class='material_current_hint'>
     {{hintText}}
-  </span>
+  </div>
 
   <div class="search_current_part">
     <el-row>
@@ -10,21 +10,24 @@
       <span class="searchcurrenttip">按物料编号筛选：</span>
       <el-input placeholder="请输入物料编号"
         class='searchcurrentinput'
+        size="small"
         v-model="searchCurrent.materialId"
         type="number"/>
 
       <span class="searchcurrenttip">按工位名称：</span>
       <el-input placeholder="请输入工位名称"
         class='searchcurrentinput'
+        size="small"
         v-model="searchCurrent.stationName"
         clearable/>
 
       <el-button icon="el-icon-search"
         :disabled='searchDisabled'
+        size="small"
         style="margin-left: 40px;"
         type="primary" @click='handleSearch'>筛选并查看物料分布</el-button>
 
-      <span class='material_current_hint'>{{hintText2}}</span>
+      <span class='material_current_hint' style="font-size: 90%;">{{hintText2}}</span>
 
     </el-row>
   </div>
@@ -39,7 +42,7 @@
         class="material_current_col">
         <el-popover
           placement="top"
-          width="250"
+          width="300"
           trigger="hover">
           <div v-for="(mitem, index) in item.uses" :key="index">
             <span style="color: #C0C4CC">{{mitem.id}}</span>
@@ -143,6 +146,7 @@ export default {
         if (response.data.code === 1) {
           this.testMaterialCurrent = response.data.data
           this.pagination.total = response.data.allLength
+          console.log(response.data)
         } else {
           this.$message({
             message: '查找失败。' + '错误原因：' + response.data.code + '-' + response.data.message,
@@ -204,6 +208,7 @@ export default {
   margin-left: 5px;
   margin-top: 10px;
   margin-bottom: 20px;
+  font-size: 90%;
   color: #606266;
   text-align: right;
   display: inline-block;

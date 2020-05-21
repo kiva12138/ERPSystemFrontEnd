@@ -133,6 +133,9 @@ export default {
         if (response.data.code === 1) {
           this.testStatisticMaterial = response.data.data
           this.pagination.total = response.data.allLength
+          if (this.testStatisticMaterial[0].use === 0) {
+            this.testStatisticMaterial[0].use = 1
+          }
         } else {
           this.$message({
             message: '查找失败。' + '错误原因：' + response.data.code + '-' + response.data.message,

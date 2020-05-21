@@ -7,21 +7,47 @@ const navItemsNew = [
         'name': '物料种类概览',
         'url': 'overview'
       },
-      {
-        'name': '当前物料分布',
-        'url': 'current'
-      },
-      {
-        'name': '物料统计',
-        'url': 'statistics'
-      },
+      // {
+      //   'name': '当前物料分布',
+      //   'url': 'current'
+      // },
+      // {
+      //   'name': '物料统计',
+      //   'url': 'statistics'
+      // },
       {
         'name': '配送与库存管理',
         'url': 'transport'
       },
+      // {
+      //   'name': '物料记录',
+      //   'url': 'record'
+      // },
       {
         'name': '物料警示配置',
         'url': 'warnset'
+      }
+    ]
+  },
+  {
+    'name': '生产树管理',
+    'url': '/tree',
+    'submenu': [
+      {
+        'name': '生产原料管理',
+        'url': 'basic'
+      },
+      {
+        'name': '合成物料管理',
+        'url': 'combine'
+      },
+      {
+        'name': '生产树管理',
+        'url': 'tree'
+      },
+      {
+        'name': '生产树数据',
+        'url': 'statistic'
       }
     ]
   },
@@ -52,6 +78,32 @@ const navItemsNew = [
       {
         'name': '已完成\\停止工单',
         'url': 'completed'
+      }
+    ]
+  },
+  {
+    'name': '生产管理',
+    'url': '/produce',
+    'submenu': [
+      {
+        'name': '待生产',
+        'url': 'waiting'
+      },
+      {
+        'name': '当前生产',
+        'url': 'current'
+      },
+      {
+        'name': '停滞中生产',
+        'url': 'stop'
+      },
+      {
+        'name': '生产预估',
+        'url': 'estimate'
+      },
+      {
+        'name': '生产统计与记录',
+        'url': 'statistic'
       }
     ]
   },

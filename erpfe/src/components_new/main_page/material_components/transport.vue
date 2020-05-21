@@ -380,7 +380,6 @@ export default {
     handleModifySubmit () {
       console.log('Modify transport......')
       console.log(this.currentTransport)
-      this.dataLoading = true
       var operation = 1
       if (this.currentTransport.operation === 'out') {
         operation = -1
@@ -412,7 +411,7 @@ export default {
           type: 'error'
         })
       })
-      this.dataLoading = false
+      this.searchData()
       this.modifyTransportDialogVisible = false
     },
     handlePagination () {

@@ -10,6 +10,14 @@ import MaterialCurrentComp from '@/components_new/main_page/material_components/
 import MaterialStatisticsComp from '@/components_new/main_page/material_components/statistics.vue'
 import MaterialTransportComp from '@/components_new/main_page/material_components/transport.vue'
 import MaterialWarnsetComp from '@/components_new/main_page/material_components/warnset.vue'
+import MaterialRecordComp from '@/components_new/main_page/material_components/record.vue'
+
+import ProducePage from '@/components_new/main_page/produce_components/produce_page.vue'
+import ProduceWaitingComp from '@/components_new/main_page/produce_components/waiting.vue'
+import ProduceCurrentComp from '@/components_new/main_page/produce_components/current.vue'
+import ProduceStopComp from '@/components_new/main_page/produce_components/stop.vue'
+import ProduceEstimateComp from '@/components_new/main_page/produce_components/estimate.vue'
+import ProduceResultComp from '@/components_new/main_page/produce_components/result.vue'
 
 import BillPage from '@/components_new/main_page/bill_components/bill_page.vue'
 import BillCompletedComp from '@/components_new/main_page/bill_components/completed.vue'
@@ -18,6 +26,12 @@ import BillDistributedComp from '@/components_new/main_page/bill_components/dist
 import BillOverallComp from '@/components_new/main_page/bill_components/overall.vue'
 import BillProducingComp from '@/components_new/main_page/bill_components/producing.vue'
 import BillStoppedComp from '@/components_new/main_page/bill_components/stopped.vue'
+
+import TreePage from '@/components_new/main_page/tree_components/tree_page.vue'
+import TreeBasicComp from '@/components_new/main_page/tree_components/basic.vue'
+import TreeCombineComp from '@/components_new/main_page/tree_components/combine.vue'
+import TreeTreeComp from '@/components_new/main_page/tree_components/tree.vue'
+import TreeStatisticComp from '@/components_new/main_page/tree_components/tree_statistic.vue'
 
 import StationPage from '@/components_new/main_page/station_components/station_page.vue'
 import StationAcceptedComp from '@/components_new/main_page/station_components/accepted.vue'
@@ -84,6 +98,13 @@ let router = new Router({
           }
         },
         {
+          path: 'record',
+          component: MaterialRecordComp,
+          meta: {
+            title: '物料记录'
+          }
+        },
+        {
           path: 'transport',
           component: MaterialTransportComp,
           meta: {
@@ -147,6 +168,89 @@ let router = new Router({
           component: BillCompletedComp,
           meta: {
             title: '已完成工单'
+          }
+        }
+      ]
+    },
+    {
+      path: '/produce',
+      name: 'Produce',
+      component: ProducePage,
+      meta: {
+        title: '生产情况与管理'
+      },
+      children: [
+        {
+          path: 'waiting',
+          component: ProduceWaitingComp,
+          meta: {
+            title: '待生产'
+          }
+        },
+        {
+          path: 'current',
+          component: ProduceCurrentComp,
+          meta: {
+            title: '当前生产情况'
+          }
+        },
+        {
+          path: 'stop',
+          component: ProduceStopComp,
+          meta: {
+            title: '已停滞生产'
+          }
+        },
+        {
+          path: 'statistic',
+          component: ProduceResultComp,
+          meta: {
+            title: '生产统计'
+          }
+        },
+        {
+          path: 'estimate',
+          component: ProduceEstimateComp,
+          meta: {
+            title: '生产预估'
+          }
+        }
+      ]
+    },
+    {
+      path: '/tree',
+      name: 'Tree',
+      component: TreePage,
+      meta: {
+        title: '生产树管理'
+      },
+      children: [
+        {
+          path: 'basic',
+          component: TreeBasicComp,
+          meta: {
+            title: '生产原料管理'
+          }
+        },
+        {
+          path: 'combine',
+          component: TreeCombineComp,
+          meta: {
+            title: '合成物料管理'
+          }
+        },
+        {
+          path: 'tree',
+          component: TreeTreeComp,
+          meta: {
+            title: '生产树管理'
+          }
+        },
+        {
+          path: 'statistic',
+          component: TreeStatisticComp,
+          meta: {
+            title: '生产树数据'
           }
         }
       ]

@@ -1,10 +1,10 @@
 <template>
 <div>
   <div class="navhead_logo">
-    <i class="el-icon-help"></i>
+    <i class="el-icon-s-opportunity"/>
   </div>
   <el-dropdown class="navhead_head" trigger="hover">
-    <i class="el-icon-user-solid" style="margin-right: 15px" />
+    <i class="el-icon-user-solid" style="margin-right: 15px; cursor: pointer"/>
     <el-dropdown-menu>
       <ul class="navhead_head_items">
         <li v-for="(navhead_item1, index1) in navHeadItemsLogin"

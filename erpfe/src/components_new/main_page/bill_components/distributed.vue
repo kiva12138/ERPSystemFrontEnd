@@ -163,6 +163,18 @@
       align="center"
       width="180">
       <template slot-scope="scope">
+        <div slot="reference">
+          <span style="white-space: nowrap; text-overflow:ellipsis; overflow:hidden;" v-if="scope.row.refuseKind!=0">
+            {{refuseReason[scope.row.refuseKind-1].name}}
+          </span>
+        </div>
+      </template>
+    </el-table-column>
+    <el-table-column
+      label="拒收附加信息"
+      align="center"
+      width="180">
+      <template slot-scope="scope">
         <span v-if="scope.row.status===2">-</span>
         <el-popover
           v-if="scope.row.status===3"
@@ -283,6 +295,7 @@
 
 <script>
 import billstatus from '../../../config_new/billstatus.js'
+import refusereason from '../../../config_new/refusereason.js'
 import materialclass from '../../../config_new/materialclass.js'
 // import testdistributedbill from '../../../config_new/testdistributedbill.js'
 
@@ -291,6 +304,7 @@ export default {
   data () {
     return {
       billStatus: billstatus,
+      refuseReason: refusereason,
       materialClass: materialclass,
       testDistributedBill: [],
       editDistributedBillVisible: false,
