@@ -136,7 +136,7 @@
             position: absolute; top: 90px; left: 0; right: 0;"/>
             <div style="position: relative; top: 0px;">
               <el-row>
-                <el-button plain :style="{'background-color': getColor(index), 'color': 'white'}">{{item.name}}</el-button>
+                <el-button plain :style="{'background-color': getColor(index), 'color': 'white'}">{{item.opname}}</el-button>
               </el-row>
               <el-row style="overflow:auto; width: 100%; margin-top: 30px;">
                 <span v-for="(needitem, index1) in item.need"

@@ -5,7 +5,7 @@
     :lazy="true"
     class="material_statistic_tab">
     <el-tab-pane label="物料生产记录" name="byRecord"><byRecord/></el-tab-pane>
-    <el-tab-pane label="物料生产统计" name="byMaterial"><byMaterial/></el-tab-pane>
+    <!-- <el-tab-pane label="物料生产统计" name="byMaterial"><byMaterial/></el-tab-pane> -->
     <el-tab-pane label="工位生产统计" name="byStation"><ByStation/></el-tab-pane>
   </el-tabs>
 </div>

@@ -294,7 +294,7 @@ export default {
       this.dataLoading = true
       this.$axios({
         method: 'get',
-        url: this.GLOBAL.backEndIp + '/api/bill/findwithstatus',
+        url: this.GLOBAL.backEndIp + '/api/bill/findstationbillproducing',
         params: {
           id: 0,
           name: '',
